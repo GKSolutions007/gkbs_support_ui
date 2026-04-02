@@ -1,0 +1,360 @@
+﻿
+@{
+    ViewBag.Title = "Appconfig";
+    Layout = "~/Views/Shared/_LayoutNav1.cshtml";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Master</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="~/Content/5.3.8/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/GKBS_GRID_2.0/css/gridui.css" rel="stylesheet" />
+    <script src="~/Scripts/5.3.8/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="~/Content/Snackbar.css" rel="stylesheet" />
+    <script src="~/Scripts/Validation.js"></script>
+    <script src="~/GKBS_GRID_2.0/js/gridui.js"></script>
+
+    <style>
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between; /* left and right */
+            align-items: center;
+            padding: 10px 20px;
+            margin-bottom: 15px;
+        }
+
+        .breadcrumb-row {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .breadcrumb-home {
+            color: #1a73e8;
+        }
+
+        .top-bar-left h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .top-bar-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-print {
+            background: white;
+            border: 1px solid #ccc;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-add {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-print:hover {
+            background: #f0f0f0;
+        }
+
+        .btn-add:hover {
+            background: #1558b0;
+        }
+
+        /* Validation Colors */
+        .is-invalid {
+            border-color: var(--error-red) !important;
+            background-color: #fff8f8;
+        }
+
+            .is-invalid + .labelup {
+                color: var(--error-red) !important;
+            }
+
+
+        /* Floating Label */
+        .labelup {
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #555;
+            background: #fff;
+            padding: 0 5px;
+            pointer-events: none;
+            letter-spacing: 0.3px;
+        }
+
+        .config-card {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            max-width: 1000px;
+            background: #fff;
+        }
+
+        .card-header {
+            background-color: #72cbd8; /* The teal color from your image */
+            padding: 12px 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            width: 300px; /* Matching the narrow width in the image */
+        }
+
+            .form-group label {
+                display: block;
+                font-size: 13px;
+                color: #555;
+                margin-bottom: 5px;
+            }
+
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 6px;
+            padding: 10px 24px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        #btnSave {
+            background: #28a745;
+            border: none;
+            padding: 8px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 14px;
+            color: white;
+        }
+
+            #btnSave:hover {
+                background: #218838;
+            }
+
+        #btnClear {
+            background: #dc3545;
+            border: none;
+            padding: 8px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 14px;
+            color: white;
+        }
+
+            #btnClear:hover {
+                background: #c82333;
+            }
+
+        .icon {
+            font-size: 16px;
+        }
+
+    </style>
+
+</head>
+<body>
+    <div class="Main-Container">
+        <div class="grid-container">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <div class="breadcrumb-row">
+                        <span class="breadcrumb-home">🏠 Home</span>
+                        <span class="breadcrumb-arrow"> > </span>
+                        <span class="breadcrumb-current">Tools | App Config</span>
+                    </div>
+                    <h2>App Config</h2>
+                </div>
+            </div>
+
+            <div class="Table-Container">
+                <div id="grid-Users-lists"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="config-card">
+        <div class="card-header">App Config</div>
+
+        <div class="card-body">
+            <div class="form-group">
+                <label>Customer ID*</label>
+                <select class="form-input" id="txtCustomerID">
+                    <option value="" selected disabled hidden>Select Customer ID</option>
+                </select>
+            </div>
+            <div id="err_CompCode" class="error-msg">Customer ID is required</div>
+
+
+            <div class="form-group">
+                <label>SMPT Config</label>
+                <input type="text" id="txtSMTPHost"class="form-input" placeholder="SMPT Config">
+            </div>
+
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="txtEmail" class="form-input" placeholder="Email Address">
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="txtPassword" class="form-input" placeholder="Password">
+            </div>
+
+            <div class="button-container">
+                <button type="button" onclick="clear()" class="btn btn-danger" id="btnClear">
+                    <span class="glyphicon glyphicon-refresh"> Clear</span>
+                </button>
+
+                <button type="button" onclick="return save()" class="btn btn-success" id="btnSave">
+                    <span class="glyphicon glyphicon-saved"> Save</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+                const Aurl = '@Session["APIurl"]';
+        console.log("AURL Value: ", Aurl)
+
+
+        $(document).ready(function () {
+            loadCustomerIDOptions();
+
+            listConfig();
+        });
+        function loadCustomerIDOptions() {
+            var finalUrl = Aurl + "AppConfig/GetCustomerCodes";
+
+            $.ajax({
+                url: finalUrl,
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (Array.isArray(res)) {
+                        let dropdown = $('#txtCustomerID');
+                        dropdown.empty();
+                        dropdown.append('<option value="" selected disabled hidden>Select Customer ID</option>');
+
+                        $.each(res, function (index, cust) {
+                            let id = cust.ID;
+                            let name = cust.DisplayName;
+
+                            dropdown.append($('<option></option>').val(id).text(name));
+                        });
+                    }
+                },
+                error: function (err) {
+                    showErrorSnackbar('❌ Failed URL: ' + finalUrl);
+                    showErrorSnackbar('❌ Status: ' + err.status);
+                }
+            });
+        }
+
+        function listConfig() {
+            $.ajax({
+                url: Aurl + 'AppConfig/Get',
+                type: 'GET',
+                success: function (res) {
+                    if (res.success && res.data) {
+                        $('#txtCustomerID').val(res.data.CustomerID);
+                        $('#txtSMTPHost').val(res.data.SMTPHost);
+                        $('#txtEmail').val(res.data.EMail);
+                        $('#txtPassword').val(res.data.Password);
+                    }
+                },
+                error: function (err) {
+                    showErrorSnackbar('Error loading config', err);
+                }
+            });
+        }
+
+        function save() {
+            var payload = {
+                CustomerID: $('#txtCustomerID').val(),
+                SmtpConfig: $('#txtSMTPHost').val(),
+                EmailAddress: $('#txtEmail').val(),
+                Password: $('#txtPassword').val()
+            };
+
+            $.ajax({
+                url: Aurl + 'AppConfig/Save',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function (res) {
+                    if (res[0].Status === 'Success') {
+                        showSuccessSnackbar(res[0].Message);
+                        listConfig();
+                    } else {
+                        alert(res[0].Message);
+                    }
+                },
+                error: function (err) {
+                    showErrorSnackbar('Error saving config', err);
+                }
+            });
+        }
+
+        function clear() {
+            $('#txtCustomerID').val('');
+            $('#txtSMTPHost').val('');
+            $('#txtEmail').val('');
+            $('#txtPassword').val('');
+        }
+
+
+    </script>
+
+</body>
+</html>
+

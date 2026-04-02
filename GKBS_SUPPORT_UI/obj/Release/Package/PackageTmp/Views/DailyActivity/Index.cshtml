@@ -1,0 +1,789 @@
+﻿
+@{
+    ViewBag.Title = "DailyActivity";
+    Layout = "~/Views/Shared/_LayoutNav1.cshtml";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Master</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="~/Content/5.3.8/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/GKBS_GRID_2.0/css/gridui.css" rel="stylesheet" />
+    <script src="~/Scripts/5.3.8/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="~/Content/Snackbar.css" rel="stylesheet" />
+    <script src="~/Scripts/Validation.js"></script>
+    <script src="~/GKBS_GRID_2.0/js/gridui.js"></script>
+
+    <style>
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between; /* left and right */
+            align-items: center;
+            padding: 10px 20px;
+            margin-bottom: 15px;
+        }
+
+        .breadcrumb-row {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .breadcrumb-home {
+            color: #1a73e8;
+        }
+
+        .top-bar-left h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .top-bar-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-print {
+            background: white;
+            border: 1px solid #ccc;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-add {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-print:hover {
+            background: #f0f0f0;
+        }
+
+        .btn-add:hover {
+            background: #1558b0;
+        }
+
+        /* Validation Colors */
+        .is-invalid {
+            border-color: var(--error-red) !important;
+            background-color: #fff8f8;
+        }
+
+            .is-invalid + .labelup {
+                color: var(--error-red) !important;
+            }
+        /* Input Group */
+        .input-group-custom {
+            position: relative;
+            margin-bottom: 6px;
+            margin-top: 14px;
+        }
+
+        .form-control-custom {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 14px;
+            border: 1.5px solid #ced4da;
+            border-radius: 8px;
+            background: #fff;
+            color: #333;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+        }
+
+            .form-control-custom:focus {
+                border-color: #17a2b8;
+                box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.15);
+            }
+
+        /* Floating Label */
+        .labelup {
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #555;
+            background: #fff;
+            padding: 0 5px;
+            pointer-events: none;
+            letter-spacing: 0.3px;
+        }
+
+        /* Error Messages */
+        .error-msg {
+            display: none;
+            font-size: 11.5px;
+            color: #dc3545;
+            margin-top: 2px;
+            margin-left: 4px;
+            font-weight: 500;
+        }
+
+            .error-msg.show {
+                display: block;
+            }
+
+        /* Border States */
+        .form-control-custom.is-error {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12) !important;
+        }
+
+        .form-control-custom.is-valid {
+            border-color: #28a745 !important;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.12) !important;
+        }
+
+        /* Star required */
+        .star {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        /* Textarea */
+        textarea.form-control-custom {
+            resize: vertical;
+            min-height: 80px;
+            padding-left: 12px;
+        }
+
+        /* Radio */
+        .input-group-custom .mt-4 {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            padding: 10px 0 4px;
+        }
+
+            .input-group-custom .mt-4 input[type="radio"] {
+                accent-color: #17a2b8;
+                width: 15px;
+                height: 15px;
+                cursor: pointer;
+                margin: 0;
+            }
+
+        /* Buttons */
+        #btnSave {
+            background: #28a745;
+            border: none;
+            padding: 8px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 14px;
+            color: white;
+        }
+
+            #btnSave:hover {
+                background: #218838;
+            }
+
+        #btnClear {
+            background: #dc3545;
+            border: none;
+            padding: 8px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 14px;
+            color: white;
+        }
+
+            #btnClear:hover {
+                background: #c82333;
+            }
+    </style>
+
+</head>
+
+<body>
+    <div class="Main-Container">
+        <div class="grid-container">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <div class="breadcrumb-row">
+                        <span class="breadcrumb-home">🏠 Home</span>
+                        <span class="breadcrumb-arrow"> > </span>
+                        <span class="breadcrumb-current">Transcation | Daily Activity</span>
+                    </div>
+                    <h2>Daily Activity</h2>
+                </div>
+            </div>
+
+            <div class="Table-Container">
+                <div id="grid-Users-lists"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="container-fluid mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Daily Activity</h5>
+        </div>
+        <div class="card-body">
+            <form id="frmDailyActivity">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="input-group-custom">
+                            <label class="labelup">Case Type <span class="star">*</span></label>
+                            <div class="mt-4">
+                                <input type="radio" name="caseType" id="caseNew" value="New" checked> New
+                                <input type="radio" name="caseType" id="caseExist" value="Exist" class="ms-3"> Exist
+                            </div>
+                        </div>
+
+                        <div class="input-group-custom mt-4">
+                            <input type="text" id="txtCaseNo" class="form-control-custom" placeholder="Case no" readonly>
+                            <label class="labelup">Case No <span class="star">*</span></label>
+                        </div>
+                        <div id="err_txtCaseNo" class="error-msg">Case No is required</div>
+
+                        <div class="input-group-custom mt-4">
+                            <select id="txtCustomerID" class="form-control-custom">
+                                <option value="">-- Select Customer --</option>
+                            </select>
+                            <label class="labelup">Customer ID <span class="star">*</span></label>
+                        </div>
+                        <div id="err_txtCustomerID" class="error-msg">Customer ID is required</div>
+
+                        <div class="input-group-custom mt-4">
+                            <input type="datetime-local" id="txtActivityDate" class="form-control-custom">
+                            <label class="labelup">Activity Date <span class="star">*</span></label>
+                        </div>
+                        <div id="err_txtActivityDate" class="error-msg">Activity Date is required</div>
+
+                        <div class="input-group-custom mt-4">
+                            <input type="text" id="txtCallBy" class="form-control-custom" placeholder="Enter Caller Name">
+                            <label class="labelup">Call By <span class="star">*</span></label>
+                        </div>
+                        <div id="err_txtCallBy" class="error-msg">Call By is required</div>
+
+                        <div class="input-group-custom mt-4">
+                            <input type="text" id="txtMobileNo" class="form-control-custom" placeholder="Enter Mobile Number">
+                            <label class="labelup">Mobile No <span class="star">*</span></label>
+                        </div>
+                        <div id="err_txtMobileNo" class="error-msg">Mobile No is required</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="input-group-custom">
+                            <select id="txtMode" class="form-control-custom">
+                                <option value="" selected disabled hidden>Select Mode</option>
+                            </select>
+                            <label class="labelup">Mode <span class="star">*</span></label>
+                        </div>
+                        <div id="err_txtMode" class="error-msg">Mode is required</div>
+
+                        <div class="input-group-custom mt-4">
+                            <label class="labelup">Contact Type <span class="star">*</span></label>
+                            <div class="mt-4">
+                                <input type="radio" name="contactType" value="Mobile" checked> Mobile
+                                <input type="radio" name="contactType" value="Phone" class="ms-3"> Phone
+                            </div>
+                        </div>
+
+                        <div class="input-group-custom mt-4">
+                            <select id="txtPurpose" class="form-control-custom">
+                                <option value="">-- Select Purpose --</option>
+                            </select>
+                            <label class="labelup">Purpose <span class="star">*</span></label>
+                        </div>
+                        <div id="err_txtPurpose" class="error-msg">Purpose is required</div>
+
+                        <div class="input-group-custom mt-4">
+                            <select id="txtSupportThrough" class="form-control-custom">
+                                <option value="" selected disabled hidden>Select Support Channel</option>
+                            </select>
+                            <label class="labelup">Support Through <span class="star">*</span></label>
+                        </div>
+                        <div id="err_txtSupportThrough" class="error-msg">Support Through is required</div>
+
+                        <div class="input-group-custom mt-4">
+                            <textarea id="txtRemarkIssue" class="form-control-custom" rows="4" placeholder="Enter remarks..."></textarea>
+                            <label class="labelup">Remark Issue <span class="star">*</span></label>
+                        </div>
+                        <div id="err_txtRemarkIssue" class="error-msg">Remark Issue is required</div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="input-group-custom">
+                            <select id="txtAction" class="form-control-custom">
+                                <option value="" selected disabled hidden>Select Action</option>
+                            </select>
+                            <label class="labelup">Action <span class="star">*</span></label>
+                        </div>
+                        <div id="err_txtAction" class="error-msg">Action is required</div>
+
+                        <div class="input-group-custom mt-4">
+                            <textarea id="txtSolution" class="form-control-custom" rows="4" placeholder="Enter solution..."></textarea>
+                            <label class="labelup">Remark / Solution <span class="star">*</span></label>
+                        </div>
+                        <div id="err_txtSolution" class="error-msg">Remark / Solution is required</div>
+
+                        <div class="input-group-custom mt-4">
+                            <select id="txtAssignTo" class="form-control-custom">
+                                <option value="" selected disabled hidden>Select User</option>
+                            </select>
+                            <label class="labelup">Assign To <span class="star">*</span></label>
+                        </div>
+                        <div id="err_txtAssignTo" class="error-msg">Assign To is required</div>
+
+                        <div class="mt-4">
+                            <label class="small fw-bold">Attachments</label>
+                            <div class="d-flex align-items-center gap-2 mt-1">
+                                <input type="file" id="fupAttachments" class="form-control form-control-sm" multiple>
+                            </div>
+                            <a href="#" class="text-decoration-none small mt-2 d-block">View Uploaded Files</a>
+                        </div>
+
+                        <input type="hidden" id="txtToDoID" value="0" />
+                    </div>
+                </div>
+
+                <div class="row mt-4 border-top pt-3">
+                    <div class="col-12 text-end">
+                        <button type="button" class="btn btn-secondary me-2" id="btnClear">
+                            <i class="fa fa-refresh"></i> Clear
+                        </button>
+                        <button type="button" class="btn btn-success" id="btnSave">
+                            <i class="fa fa-save"></i> Save
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+    <script>
+        const Aurl = '@Session["APIurl"]';
+        const userId = sessionStorage.getItem("userID");
+        let loadedCaseOrgID = null;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramTaskId = urlParams.get('taskId');
+        const paramFrom = urlParams.get('from');
+        const paramType = urlParams.get('Type');
+        const paramOrgId = urlParams.get('OrgId');
+
+
+        let tempIdCounter = 0;
+
+
+        $(document).ready(function () {
+            loadCustomerDropdown();
+            loadUserDropdown();
+            loadMasterDropdown('Mode',          '#txtMode',          'Select Mode');
+            loadMasterDropdown('Purpose',       '#txtPurpose',       'Select Purpose');
+            loadMasterDropdown('SupportThrough','#txtSupportThrough','Select Support Channel');
+            loadMasterDropdown('Action',        '#txtAction',        'Select Action');
+            loadNewCaseNo();
+
+
+            loadCustomerDropdown(function () {
+                loadUserDropdown();
+
+                if (paramFrom === 'home' && paramType === 'Task' && paramTaskId) {
+                    patchFromTask(paramTaskId);
+                }
+                if (paramFrom === 'home' && paramType === 'DailyActivity' && paramOrgId) {
+                    patchFromInProgress(paramOrgId);
+                }
+                if (!paramFrom) {
+                    loadNewCaseNo();
+                }
+            });
+
+            $('input[name="caseType"]').on('change', function () {
+                const isExist = $(this).val() === 'Exist';
+                const $caseInput = $('#txtCaseNo');
+                loadedCaseOrgID = null;
+
+                if (isExist) {
+                    $caseInput.prop('readonly', false).val('').focus();
+                } else {
+                    $caseInput.prop('readonly', true);
+                    loadNewCaseNo();
+                }
+                toggleError('txtCaseNo', true);
+            });
+
+            $('#btnSave').on('click', function () {
+                if (!validateDailyActivity()) return;
+                save();
+            });
+
+            $('#btnClear').on('click', function () {
+                clearForm();
+            });
+        });
+
+        function loadNewCaseNo() {
+            $.ajax({
+                url: Aurl + "Transaction/GetCaseNo",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ id: 1 }),
+                success: function (res) {
+                    if (res.success && res.data) {
+                        $('#txtCaseNo').val(res.data);
+                    }
+                },
+                error: function (err) {
+                    console.error("Error loading case no:", err);
+                }
+            });
+        }
+
+        function loadCustomerDropdown(callback) {
+            $.ajax({
+                url: Aurl + "Transaction/getCustomerList",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({}),
+                success: function (res) {
+                    if (res.success && res.data) {
+                        let dropdown = $('#txtCustomerID');
+                        dropdown.empty().append('<option value="">-- Select Customer --</option>');
+                        $.each(res.data, function (index, item) {
+                            dropdown.append($('<option>').val(item.ID).text(item.DisplayName));
+                        });
+                    }
+                    if (typeof callback === "function") callback();
+                },
+                error: function () {
+                    if (typeof callback === "function") callback();
+                }
+            });
+        }
+
+        function loadMasterDropdown(type, selector, placeholder) {
+            $.ajax({
+                url: Aurl + "Transaction/getSingleMasterByType",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ Type: type }),
+                success: function (res) {
+                    if (res.success && res.data) {
+                        let dropdown = $(selector);
+                        dropdown.empty().append(
+                            '<option value="" disabled selected hidden>' + placeholder + '</option>'
+                        );
+                        $.each(res.data, function (i, item) {
+                            dropdown.append($('<option>').val(item.ID).text(item.Name));
+                        });
+                    } else {
+                        console.error("Failed to load " + type + ":", res.message);
+                    }
+                },
+                error: function (err) { console.error("Error loading " + type + ":", err); }
+            });
+        }
+
+        function loadUserDropdown() {
+            $.ajax({
+                url: Aurl + "Transaction/getUserList",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({}),
+                success: function (res) {
+                    if (res.success && res.data) {
+                        let dropdown = $('#txtAssignTo');
+                        dropdown.empty().append('<option value="" disabled selected hidden>Select User</option>');
+                        $.each(res.data, function (i, item) {
+                            dropdown.append($('<option>').val(item.ID).text(item.UserName));
+                        });
+                    }
+                },
+                error: function (err) { console.error("Error loading users:", err); }
+            });
+        }
+
+        function getDetailsByCaseNo() {
+            const caseNo = $('#txtCaseNo').val().trim();
+            if (caseNo === "") return;
+
+            $.ajax({
+                url: Aurl + "Transaction/GetByCaseNo",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ CaseNo: caseNo }),
+                success: function (res) {
+                    if (res && res.success && res.data) {
+                        const d = res.data;
+                        console.log("SQL Data Received:", d);
+                        loadedCaseOrgID = d.ID || null;
+
+                        $('#txtCallBy').val(d.Callby);
+                        $('#txtMobileNo').val(d.FromMobNo);
+                        $('#txtRemarkIssue').val(d.Remarks_Issue);
+                        $('#txtSolution').val(d.Remarks_Solution);
+                        $('#txtCustomerID').val(d.CustomerID);
+                        $('#txtMode').val(d.Mode);
+                        $('#txtPurpose').val(d.Purpose);
+                        $('#txtSupportThrough').val(d.SupportThrough);
+                        $('#txtAction').val(d.Action);
+                        $('#txtAssignTo').val(d.AssignTo);
+                        $('#txtCustomerID, #txtMode, #txtPurpose, #txtSupportThrough, #txtAction, #txtAssignTo').trigger('change');
+
+                        $('input[name="contactType"]').val([d.Mobile_Phone ? 'Mobile' : 'Phone']);
+
+                        if (d.Date) {
+                            const dt = new Date(d.Date);
+                            const formatted = dt.getFullYear() + '-' +
+                                String(dt.getMonth() + 1).padStart(2, '0') + '-' +
+                                String(dt.getDate()).padStart(2, '0') + 'T' +
+                                String(dt.getHours()).padStart(2, '0') + ':' +
+                                String(dt.getMinutes()).padStart(2, '0');
+                            $('#txtActivityDate').val(formatted);
+                        }
+
+                        ['txtCustomerID','txtActivityDate','txtCallBy','txtMobileNo',
+                         'txtMode','txtPurpose','txtSupportThrough','txtRemarkIssue',
+                         'txtAction','txtSolution','txtAssignTo'].forEach(id => {
+                            toggleError(id, true);
+                        });
+
+                        showSuccessSnackbar("Case " + d.CaseNo + " loaded.");
+                    } else {
+                        showErrorSnackbar((res.message || "Case not found."));
+                    }
+                },
+                error: function (xhr) {
+                    showErrorSnackbar("API Error: " + xhr.statusText);
+                }
+            });
+        }
+
+        $(document).on('blur', '#txtCaseNo', function () {
+            if ($('input[name="caseType"]:checked').val() === 'Exist') {
+                getDetailsByCaseNo();
+            }
+        });
+
+        function patchFromTask(taskId) {
+            $.ajax({
+                url: Aurl + "Transaction/GetTaskById",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ TaskId: parseInt(taskId) }),
+                success: function (res) {
+                    if (res.success && res.data) {
+                        const d = res.data;
+                        $('input[name="caseType"][value="New"]').prop('checked', true);
+                        $('#txtCaseNo').prop('readonly', true);
+                        loadNewCaseNo();
+
+                        $('#txtCustomerID').val(d.CustomerID).trigger('change');
+                        $('#txtRemarkIssue').val(d.RemarkIssue || d.Description || '');
+                        $('#txtCallBy').val('GK Solutions');
+                        $('#txtMobileNo').val('');
+
+                        $('#txtToDoID').val(taskId);
+
+                        toggleError('txtCustomerID', true);
+                        showSuccessSnackbar("Task loaded. Fill remaining details.");
+                    }
+                },
+                error: function (xhr) { console.error("Error loading task:", xhr.statusText); }
+            });
+        }
+
+        // ✅ Patch from In-Progress (Exist case, load all fields by OrgId)
+        function patchFromInProgress(orgId) {
+            $.ajax({
+                url: Aurl + "Transaction/GetDailyActivityByOrgId",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ OrgId: parseInt(orgId) }),
+                success: function (res) {
+                    if (res.success && res.data) {
+                        const d = res.data;
+                        console.log("InProgress Fetching Values: ", d);
+
+                        // Switch to Exist mode
+                        $('input[name="caseType"][value="Exist"]').prop('checked', true);
+                        $('#txtCaseNo').prop('readonly', false).val(d.CaseNo);
+
+                        // Store OrgID
+                        loadedCaseOrgID = d.ID || parseInt(orgId);
+
+                        // Fill all fields
+                        $('#txtCustomerID').val(d.CustomerID).trigger('change');
+                        $('#txtCallBy').val(d.CallBy);
+                        $('#txtMobileNo').val(d.FromMobNo);
+                        $('#txtMode').val(d.Mode).trigger('change');
+                        $('#txtPurpose').val(d.Purpose).trigger('change');
+                        $('#txtSupportThrough').val(d.SupportThrough).trigger('change');
+                        $('#txtRemarkIssue').val(d.RemarkIssue);
+                        $('#txtAction').val(d.Action).trigger('change');
+                        $('#txtSolution').val(d.RemarkSolution);
+                        $('#txtAssignTo').val(d.AssignTo).trigger('change');
+                        $('input[name="contactType"]').val([d.Mobile_Phone ? 'Mobile' : 'Phone']);
+
+                        if (d.ActivityDate) {
+                            const dt = new Date(d.ActivityDate);
+                            const formatted = dt.getFullYear() + '-' +
+                                String(dt.getMonth() + 1).padStart(2, '0') + '-' +
+                                String(dt.getDate()).padStart(2, '0') + 'T' +
+                                String(dt.getHours()).padStart(2, '0') + ':' +
+                                String(dt.getMinutes()).padStart(2, '0');
+                            $('#txtActivityDate').val(formatted);
+                        }
+
+                        ['txtCustomerID', 'txtActivityDate', 'txtCallBy', 'txtMobileNo',
+                            'txtMode', 'txtPurpose', 'txtSupportThrough', 'txtRemarkIssue',
+                            'txtAction', 'txtSolution', 'txtAssignTo'].forEach(id => toggleError(id, true));
+
+                        showSuccessSnackbar("In-progress case loaded.");
+                    }
+                },
+                error: function (xhr) { console.error("Error loading in-progress:", xhr.statusText); }
+            });
+        }
+
+        function toggleError(elementId, isValid, msg = "") {
+            const $el = $('#' + elementId);
+            const $err = $('#err_' + elementId);
+            if (!isValid) {
+                if (msg !== "") $err.text(msg);
+                $err.addClass('show');
+                $el.addClass('is-error').removeClass('is-valid');
+            } else {
+                $err.removeClass('show');
+                $el.removeClass('is-error').addClass('is-valid');
+            }
+        }
+
+        function validateDailyActivity() {
+            let isValid = true;
+
+            const fields = [
+                'txtCaseNo', 'txtCustomerID', 'txtActivityDate', 'txtCallBy',
+                'txtMode', 'txtPurpose', 'txtSupportThrough', 'txtRemarkIssue',
+                'txtAction', 'txtSolution', 'txtAssignTo'
+            ];
+
+            fields.forEach(id => {
+                const val = ($('#' + id).val() || '').toString().trim();
+                const ok = val !== '';
+                toggleError(id, ok);
+                if (!ok) isValid = false;
+            });
+
+            const mobileVal = $('#txtMobileNo').val().trim();
+            if (mobileVal === '') {
+                toggleError('txtMobileNo', false, "Mobile No is required");
+                isValid = false;
+            } else if (mobileVal.length < 10) {
+                toggleError('txtMobileNo', false, "Mobile number should be 10 digits");
+                isValid = false;
+            } else {
+                toggleError('txtMobileNo', true);
+            }
+
+            return isValid;
+        }
+
+        $(document).on('blur change', '.form-control-custom', function () {
+            const id = this.id;
+            const val = ($(this).val() || '').toString().trim();
+            if (id === 'txtMobileNo') {
+                if (val === '')           toggleError(id, false, "Mobile No is required");
+                else if (val.length < 10) toggleError(id, false, "Mobile number should be 10 digits");
+                else                      toggleError(id, true);
+            } else {
+                toggleError(id, val !== '');
+            }
+        });
+
+        $('#txtMobileNo').on('input', function () {
+            let val = $(this).val().replace(/[^0-9]/g, '');
+            if (val.length > 10) val = val.substring(0, 10);
+            $(this).val(val);
+        });
+
+        function save() {
+            const caseNo = $('#txtCaseNo').prop('disabled')
+                ? $('#txtCaseNo').val()
+                : $('#txtCaseNo').val().trim();
+
+            const caseType    = $('input[name="caseType"]:checked').val();
+            const contactType = $('input[name="contactType"]:checked').val();
+
+            const payload = {
+                CaseType:       caseType === 'New' ? false : true,
+                CaseNo:         caseNo,
+                CustomerID:     parseInt($('#txtCustomerID').val()) || 0,
+                ActivityDate:   $('#txtActivityDate').val(),
+                CallBy:         $('#txtCallBy').val().trim(),
+                FromMobNo:      $('#txtMobileNo').val().trim(),
+                Mode:           parseInt($('#txtMode').val()) || 0,
+                Mobile_Phone:   contactType === 'Mobile' ? true : false,
+                Purpose:        parseInt($('#txtPurpose').val()) || 0,
+                SupportThrough: parseInt($('#txtSupportThrough').val()) || 0,
+                RemarkIssue:    $('#txtRemarkIssue').val().trim(),
+                Action:         parseInt($('#txtAction').val()) || 0,
+                RemarkSolution: $('#txtSolution').val().trim(),
+                AssignTo:       parseInt($('#txtAssignTo').val()) || 0,
+                CBy:            parseInt(userId) || 0,
+                Status:         caseType === 'New' ? 1 : 2,
+                OrgID:          (caseType === 'Exist' && loadedCaseOrgID) ? loadedCaseOrgID : null,
+                ToDoID:         null,
+                FileName: "",
+                ToDoID: parseInt($('#txtToDoID').val()) || null,
+            };
+
+            console.log("Saving payload:", payload);
+
+            $.ajax({
+                url: Aurl + "Transaction/SaveDailyActivity",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(payload),
+                success: function (res) {
+                    if (res.success) {
+                        showSuccessSnackbar("Daily Activity saved. ID: " + res.newID);
+                        clearForm();
+                    } else {
+                        showErrorSnackbar(res.message);
+                    }
+                },
+                error: function (xhr) {
+                    showErrorSnackbar(" API Error: " + xhr.statusText);
+                }
+            });
+        }
+
+        function clearForm() {
+            loadedCaseOrgID = null;
+            $('#frmDailyActivity')[0].reset();
+            $('input[name="caseType"][value="New"]').prop('checked', true);
+            $('input[name="contactType"][value="Mobile"]').prop('checked', true);
+            $('#txtActivityDate').val('');
+            $('.form-control-custom').removeClass('is-error is-valid');
+            $('.error-msg').removeClass('show');
+            $('#txtCaseNo').prop('readonly', true);
+            loadNewCaseNo();
+        }
+    </script>
+</body>
+</html>

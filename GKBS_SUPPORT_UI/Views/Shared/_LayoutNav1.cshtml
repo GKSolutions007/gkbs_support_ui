@@ -1,0 +1,534 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - GKBS</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="~/Content/5.3.8/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/GKBS_Grid/css/gridui.css" rel="stylesheet" />
+    <script src="~/Scripts/5.3.8/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="~/Content/Snackbar.css" rel="stylesheet" />
+    <script src="~/Scripts/Validation.js"></script>
+    <script src="~/GKBS_Grid/js/gridui.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ── NAVBAR ── */
+        .top-navbar {
+            background-color: #008080;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .company-name {
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .navbar-center {
+            flex: 1;
+            max-width: 480px;
+            margin: 0 30px;
+        }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+            .search-wrapper i {
+                position: absolute;
+                left: 13px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: rgba(255,255,255,0.7);
+                font-size: 13px;
+            }
+
+        .search-box {
+            width: 100%;
+            padding: 8px 18px 8px 38px;
+            border-radius: 25px;
+            border: none;
+            background: rgba(255,255,255,0.18);
+            color: white;
+            font-size: 13px;
+            outline: none;
+        }
+
+            .search-box::placeholder {
+                color: rgba(255,255,255,0.7);
+            }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #005f5f;
+            border: 2px solid rgba(255,255,255,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* ── LAYOUT ── */
+        .main-layout {
+            display: flex;
+            margin-top: 55px;
+            height: calc(100vh - 55px);
+        }
+
+        .sidebar {
+            width: 50px;
+            background: #fff;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            padding-top: 10px;
+            flex-shrink: 0;
+            transition: width 0.3s ease;
+            overflow: hidden;
+            position: relative;
+        }
+
+            .sidebar.open {
+                width: 220px;
+            }
+
+        /* Hamburger fixed at top - changed to span not button */
+        .hamburger-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #555;
+            cursor: pointer;
+            padding: 10px 15px;
+            display: block;
+            width: 100%; /* takes full width of sidebar */
+            text-align: right;
+            position: sticky; /* stays at top always */
+            top: 0;
+            left: 0;
+            z-index: 10;
+
+        }
+
+        .menu-container {
+            padding-top: 10px;
+            width: 220px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+
+        .sidebar.open .menu-container {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .menu-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            color: #333;
+            font-weight: 500;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+            .menu-header:hover {
+                background: #f0f0f0;
+            }
+
+            .menu-header .arrow {
+                margin-left: auto;
+                font-size: 11px;
+                transition: transform 0.3s;
+            }
+
+            .menu-header.open .arrow {
+                transform: rotate(180deg); /* arrow flips when open */
+            }
+
+        .submenu {
+            display: none;
+            flex-direction: column;
+            padding-left: 40px; /* indent under parent */
+            background: #f9f9f9;
+        }
+
+            .submenu.open {
+                display: flex; 
+            }
+
+        .submenu-item {
+            padding: 8px 15px;
+            color: #555;
+            text-decoration: none;
+            font-size: 13px;
+            border-radius: 4px;
+            white-space: nowrap;
+            transition: background 0.2s, color 0.2s;
+        }
+
+            .submenu-item:hover {
+                background: #e8e8e8;
+                color: #1a73e8;
+            }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+        }
+
+        /* ── YOUR CUSTOM FORM STYLES ── */
+        .input-group-custom {
+            position: relative;
+            margin-top: 19px;
+        }
+
+            .input-group-custom i {
+                position: absolute;
+                left: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #a2acba;
+            }
+
+        .form-control-custom {
+            width: 100%;
+            padding: 6px 15px 6px 50px;
+            background: #fff;
+            border: 1px solid #dcdcdc;
+            border-radius: 9px;
+            box-sizing: border-box;
+        }
+
+        .labelup {
+            position: absolute;
+            top: -12px;
+            left: 12px;
+            background: #fff;
+            padding: 0 5px;
+            color: #666;
+            font-size: 0.75rem;
+            font-weight: 600;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .is-invalid {
+            border-color: #dc3545 !important;
+            background-color: #fff8f8;
+        }
+
+            .is-invalid + .labelup {
+                color: #dc3545 !important;
+            }
+
+        .mismatch {
+            border-color: #f39c12 !important;
+        }
+
+            .mismatch + .labelup {
+                color: #f39c12 !important;
+            }
+
+        .error-msg {
+            color: #dc3545;
+            font-size: 11px;
+            font-weight: 500;
+            margin: 4px 0 10px 10px;
+            display: none;
+        }
+
+        .star {
+            color: #dc3545;
+            margin-left: 3px;
+            font-weight: bold;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(45deg, #0061f2, #6900d1);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="toastBox"></div>
+
+    <nav class="top-navbar">
+        <a href="@Url.Action("Index", "Home")" style="text-decoration: none; display: flex;">
+            <div class="navbar-left" style="cursor: pointer;">
+                <img src="~/Content/Images/Logo.png" alt="Logo" style="height:28px;" onerror="this.style.display='none'" />
+                <span class="company-name">GK BUSINESS &amp; SOLUTIONS</span>
+            </div>
+        </a>
+
+        <div class="navbar-center">
+            <div class="search-wrapper">
+                <i class="fa fa-search"></i>
+                <input type="text" class="search-box" placeholder="Looking for something?" />
+            </div>
+        </div>
+
+        <div class="navbar-right">
+            <span>Hello, <strong id="lblUserName">User</strong></span>
+            <div class="user-avatar" id="avatarIcon" onclick="toggleProfileMenu()">U</div>
+
+            <div id="profileDropdown" style="display:none; position:absolute; top:52px; right:15px; background:white; border-radius:10px; min-width:200px; box-shadow:0 4px 20px rgba(0,0,0,0.15); z-index:9999; overflow:hidden; border:1px solid #eee;">
+                <div style="padding:14px 16px; border-bottom:1px solid #f0f0f0;">
+                    <div style="font-weight:700; color:#333;" id="dropUserName">User</div>
+                    <div style="font-size:11px; color:#999;">Logged In</div>
+                </div>
+                <div onclick="openChangePassword()" style="padding:12px 16px; cursor:pointer; color:#333; font-size:13px; display:flex; align-items:center; gap:10px;">
+                    <i class="fa fa-key" style="color:#008080;"></i> Change Password
+                </div>
+                <div onclick="Logout()" style="padding:12px 16px; cursor:pointer; color:#e53935; font-size:13px; display:flex; align-items:center; gap:10px; border-top:1px solid #f0f0f0;">
+                    <i class="fa fa-sign-out-alt" style="color:#e53935;"></i> Logout
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-layout">
+        <div class="sidebar" id="sidebar">
+            <span class="hamburger-btn" onclick="toggleSidebar()" title="Menu">
+                <i class="fa fa-bars"></i>
+            </span>
+
+            <div class="menu-container">
+                <div class="menu-item">
+                    <div class="menu-header" onclick="toggleSubMenu(this)">
+                        <i class="fa fa-database"></i>
+                        <span class="menu-text">Master</span>
+                        <i class="fa fa-chevron-down arrow"></i>
+                    </div>
+                    <div class="submenu">
+                        <a href="@Url.Action("Index", "Users")" class="submenu-item">Users</a>
+                        <a href="@Url.Action("Index", "Customer")" class="submenu-item">Customer</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-header" onclick="toggleSubMenu(this)">
+                        <i class="fa fa-tools"></i>
+                        <span class="menu-text">Tools</span>
+                        <i class="fa fa-chevron-down arrow"></i>
+                    </div>
+                    <div class="submenu">
+                        <a href="@Url.Action("Index", "Appconfig")" class="submenu-item">App Config</a>
+                    </div>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-header" onclick="toggleSubMenu(this)">
+                        <i class="fa fa-exchange-alt"></i>
+                        <span class="menu-text">Transaction</span>
+                        <i class="fa fa-chevron-down arrow"></i>
+                    </div>
+                    <div class="submenu">
+                        <a href="@Url.Action("Index", "DailyActivity")" class="submenu-item">Daily Activity</a>
+                        <a href="@Url.Action("Index", "ToDoList")" class="submenu-item">To Do List</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-area">
+            @RenderBody()
+        </div>
+    </div>
+
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius:20px; border:none; padding:20px;">
+                <div class="modal-header" style="border-bottom:none;">
+                    <h5 class="modal-title fw-bold" style="color:#008080;">Change Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group-custom">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="cpNewPassword" class="form-control-custom" placeholder="New Password">
+                        <label class="labelup">New Password<span class="star">*</span></label>
+                    </div>
+                    <div id="err_cpNewPassword" class="error-msg">Password is required</div>
+
+                    <div class="input-group-custom">
+                        <i class="fa-solid fa-check-double"></i>
+                        <input type="password" id="cpConfirmPassword" class="form-control-custom" placeholder="Confirm Password">
+                        <label class="labelup">Confirm Password<span class="star">*</span></label>
+                    </div>
+                    <div id="err_cpConfirmPassword" class="error-msg">Passwords do not match</div>
+                </div>
+                <div class="modal-footer" style="border-top:none; gap:10px;">
+                    <button type="button" data-bs-dismiss="modal" style="padding:10px 20px; border-radius:8px; border:1px solid #ddd; background:white; cursor:pointer; font-size:13px;">Close</button>
+                    <button type="button" onclick="ChangePassword()" class="btn-primary-custom" style="margin-top:0; width:auto; padding:10px 25px;">Change Password</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            var uid = sessionStorage.getItem("userID");
+            var uname = sessionStorage.getItem("userName") || "User";
+            $("#lblUserName, #dropUserName").text(uname);
+            $("#avatarIcon").text(uname.charAt(0).toUpperCase());
+            if (!uid) { window.location.href = '/Login/Index'; }
+
+            // Attach validation listeners
+            var cpInputs = document.querySelectorAll('#changePasswordModal .form-control-custom');
+            cpInputs.forEach(function (input) {
+                input.addEventListener('blur', function () { validateCPField(this); });
+                input.addEventListener('input', function () {
+                    this.classList.remove('is-invalid', 'mismatch');
+                    var err = document.getElementById('err_' + this.id);
+                    if (err) err.style.display = 'none';
+                });
+            });
+        });
+
+        function toggleSidebar() {
+            const sidebar = $('#sidebar');
+            const icon = $('.hamburger-btn i');
+
+            sidebar.toggleClass('open');
+
+            if (sidebar.hasClass('open')) {
+                icon.attr('class', 'fa fa-times');
+            } else {
+                icon.attr('class', 'fa fa-bars');
+            }
+        }
+        function toggleProfileMenu() { var dd = document.getElementById('profileDropdown'); dd.style.display = dd.style.display === 'none' ? 'block' : 'none'; }
+
+        function toggleSubMenu(header) {
+            const submenu = header.nextElementSibling;
+
+            document.querySelectorAll('.submenu.open').forEach(s => {
+                if (s !== submenu) {
+                    s.classList.remove('open');
+                    s.previousElementSibling.classList.remove('open');
+                }
+            });
+
+            // toggle this one
+            submenu.classList.toggle('open');
+            header.classList.toggle('open');
+        }
+
+        document.addEventListener('click', function (e) {
+            var avatar = document.getElementById('avatarIcon');
+            var dd = document.getElementById('profileDropdown');
+            if (avatar && dd && !avatar.contains(e.target) && !dd.contains(e.target)) { dd.style.display = 'none'; }
+        });
+
+        function openChangePassword() {
+            document.getElementById('profileDropdown').style.display = 'none';
+            new bootstrap.Modal(document.getElementById('changePasswordModal')).show();
+        }
+
+        function ChangePassword() {
+            var inputs = document.querySelectorAll('#changePasswordModal .form-control-custom');
+            var isValid = true;
+            inputs.forEach(function(input) { validateCPField(input); if (input.classList.contains('is-invalid')) isValid = false; });
+            if (document.getElementById('cpConfirmPassword').classList.contains('mismatch')) isValid = false;
+            if (!isValid) return;
+
+            var Aurl = '@Session["APIurl"]';
+            $.post(Aurl + "login/resetpassword", {
+                UserID: sessionStorage.getItem("userID"),
+                Password: $("#cpNewPassword").val()
+            }, function (res) {
+                if (res.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+                    $("#cpNewPassword, #cpConfirmPassword").val("");
+                }
+            });
+        }
+
+        function validateCPField(el) {
+            var val = el.value.trim();
+            var errDiv = document.getElementById('err_' + el.id);
+            var isValid = (val !== "");
+            if (!isValid) {
+                el.classList.add('is-invalid');
+                if (errDiv) { errDiv.innerText = "This field is required"; errDiv.style.display = 'block'; }
+            } else {
+                el.classList.remove('is-invalid');
+                if (errDiv) errDiv.style.display = 'none';
+            }
+            if (el.id === "cpConfirmPassword" || el.id === "cpNewPassword") {
+                var p1 = document.getElementById('cpNewPassword').value;
+                var p2 = document.getElementById('cpConfirmPassword').value;
+                if (p1 && p2 && p1 !== p2) {
+                    document.getElementById('cpConfirmPassword').classList.add('mismatch');
+                    document.getElementById('err_cpConfirmPassword').style.display = 'block';
+                }
+            }
+        }
+
+        function Logout() { sessionStorage.clear(); window.location.href = '@Url.Action("Index", "Login")'; }
+    </script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

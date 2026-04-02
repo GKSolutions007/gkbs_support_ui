@@ -1,0 +1,140 @@
+﻿@{
+    ViewBag.Title = "Home";
+    Layout = "~/Views/Shared/_LayoutNav1.cshtml";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - GKBS</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="~/Content/5.3.8/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/GKBS_GRID_2.0/css/gridui.css" rel="stylesheet" />
+    <script src="~/Scripts/5.3.8/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="~/Content/Snackbar.css" rel="stylesheet" />
+    <script src="~/Scripts/Validation.js"></script>
+    <script src="~/GKBS_GRID_2.0/js/gridui.js"></script>
+
+
+    <style>
+        .dashboard-container {
+            display: flex;
+        }
+
+        .dashboard-right {
+            margin-left: auto;
+            width: 60%;
+        }
+
+        .card-custom {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-right">
+            <div class="card-custom">
+                <div id="grid-my-tasks"></div>
+            </div>
+            <div class="card-custom">
+                <div id="grid-inprogress"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+      const Aurl = '@Session["APIurl"]';
+const userId = sessionStorage.getItem("userID");
+
+
+    if (userId) {
+        var myTaskColumns = [];
+        var inProgressColumns = [];
+
+        GetColumnSettingsData(2, 1, 1);
+        GetColumnSettingsData(2, 2, 1);
+        loadMyTasks();
+        loadInProgress();
+    }
+
+
+
+      
+        function loadMyTasks() {
+            $.ajax({
+                url: Aurl + "Transaction/GetUserAssignedTask",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ UserId: parseInt(userId) }),
+                success: function (res) {
+                    if (res.success && res.data) {
+                        new GKBSDynamicGrid('#grid-my-tasks', myTaskColumns, res.data, {
+                            height: '250px',
+                            enableSearch: true,
+                            enableSorting: true,
+                            stickyToWindow: true,
+                            ReportName: 'My Tasks',
+                            onCellClick: function (row) {
+                                if (!row || !row.SNo) return;
+                                window.location.href = '/DailyActivity/Index?taskId=' + row.SNo + '&from=home&Type=Task';
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        function loadInProgress() {
+    $.ajax({
+        url: Aurl + "Transaction/GetUserInProgress",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ UserId: parseInt(userId) }),
+        success: function (res) {
+            if (res.success && res.data) {
+                new GKBSDynamicGrid('#grid-inprogress', inProgressColumns, res.data, {
+                    height: '250px',
+                    enableSearch: true,
+                    enableSorting: true,
+                    stickyToWindow: true,
+                    ReportName: 'In-Progress Daily Tasks',
+                    onCellClick: function (row) {
+                        if (!row || !row.ID) return;
+                        window.location.href = '/DailyActivity/Index?OrgId=' + row.ID + '&from=home&Type=DailyActivity';
+                    }
+                });
+            }
+        },
+        error: function (xhr) { console.error("Error loading inprogress:", xhr.statusText); }
+    });
+        }
+        function GetColumnSettingsData(nMode, nFormID, nTableID) {
+            $.ajax({
+                url: Aurl + "columnsettings/getcolumnsettings",
+                type: 'get',
+                contentType: 'json',
+                data: { Mode: nMode, FormID: nFormID, TableID: nTableID, FormorReport: 0 },
+                async: false,
+                success: function (data) {
+                    if (data.length > 0) {
+                        if (nFormID == 1)
+                            myTaskColumns = (data);
+                        else
+                            inProgressColumns = (data);
+
+                        //CustomerColumns.push(actions);
+                        //CustomerColumns.push(OtherActions);
+
+                    } else {
+                        showErrorSnackbar("No column data found");
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

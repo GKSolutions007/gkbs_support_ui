@@ -1,0 +1,1002 @@
+﻿
+@{
+    ViewBag.Title = "Users";
+    Layout = "~/Views/Shared/_LayoutNav1.cshtml";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Master</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="~/Content/5.3.8/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/GKBS_GRID_2.0/css/gridui.css" rel="stylesheet" />
+    <script src="~/Scripts/5.3.8/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="~/Content/Snackbar.css" rel="stylesheet" />
+    <script src="~/Scripts/Validation.js"></script>
+    <script src="~/GKBS_GRID_2.0/js/gridui.js"></script>
+
+    <style>
+        .top-bar {
+            display: flex;
+            justify-content: space-between; /* left and right */
+            align-items: center;
+            padding: 10px 20px;
+            margin-bottom: 15px;
+        }
+
+        .breadcrumb-row {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .breadcrumb-home {
+            color: #1a73e8;
+        }
+
+        .top-bar-left h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .top-bar-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-print {
+            background: white;
+            border: 1px solid #ccc;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-add {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-print:hover {
+            background: #f0f0f0;
+        }
+
+        .btn-add:hover {
+            background: #1558b0;
+        }
+
+        /* Validation Colors */
+        .is-invalid {
+            border-color: var(--error-red) !important;
+            background-color: #fff8f8;
+        }
+
+            .is-invalid + .labelup {
+                color: var(--error-red) !important;
+            }
+        /* ============================================================
+   User MODAL - COMPLETE CSS
+   ============================================================ */
+        /* Modal Size */
+        .modal-xl {
+            max-width: 1100px;
+        }
+
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Header */
+        .modal-header {
+            background: linear-gradient(135deg, #1a6e3c, #28a745);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            padding: 16px 24px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-header .btn-close {
+            filter: invert(1);
+        }
+
+        /* Footer */
+        .modal-footer {
+            background: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+            border-radius: 0 0 12px 12px;
+            padding: 12px 24px;
+            gap: 10px;
+        }
+
+        /* ── Input Group ── */
+        .input-group-custom {
+            position: relative;
+            margin-bottom: 6px;
+            margin-top: 14px;
+        }
+
+        .form-control-custom {
+            width: 100%;
+            padding: 10px 12px 10px 36px;
+            font-size: 14px;
+            border: 1.5px solid #ced4da;
+            border-radius: 8px;
+            background: #fff;
+            color: #333;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+        }
+
+            .form-control-custom:focus {
+                border-color: #28a745;
+                box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.15);
+            }
+
+        /* input without icon (dates, file, textarea) */
+        input[type="date"].form-control-custom,
+        input[type="file"].form-control-custom,
+        textarea.form-control-custom {
+            padding-left: 12px;
+        }
+
+        /* Floating Label */
+        .labelup {
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #555;
+            background: #fff;
+            padding: 0 5px;
+            pointer-events: none;
+            letter-spacing: 0.3px;
+        }
+
+        /* Icon inside input */
+        .input-group-custom > i {
+            position: absolute;
+            left: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            font-size: 13px;
+            z-index: 1;
+        }
+
+        /* Radio Group */
+        .input-group-custom .mt-3 {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            padding: 10px 0 4px;
+            margin-top: 0 !important;
+        }
+
+            .input-group-custom .mt-3 input[type="radio"] {
+                accent-color: #28a745;
+                width: 15px;
+                height: 15px;
+                cursor: pointer;
+                margin: 0;
+            }
+
+            .input-group-custom .mt-3 label,
+            .input-group-custom .mt-3 {
+                font-size: 14px;
+                color: #333;
+                cursor: pointer;
+            }
+
+        /* Textarea */
+        textarea.form-control-custom {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Geo row */
+        .input-group-custom.d-flex {
+            gap: 8px;
+        }
+
+            .input-group-custom.d-flex .form-control-custom {
+                flex: 1;
+            }
+
+        /* Active Checkbox */
+        .mt-2 input[type="checkbox"] {
+            accent-color: #28a745;
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        .mt-2 {
+            font-size: 14px;
+            color: #333;
+            padding: 6px 0;
+        }
+
+        /* ── Error Messages ── */
+        .error-msg {
+            display: none;
+            font-size: 11.5px;
+            color: #dc3545;
+            margin-top: 2px;
+            margin-left: 4px;
+            font-weight: 500;
+        }
+
+            .error-msg.show {
+                display: block;
+            }
+
+        /* ── Border States ── */
+        .form-control-custom.is-error {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12) !important;
+        }
+
+        .form-control-custom.is-valid {
+            border-color: #28a745 !important;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.12) !important;
+        }
+
+        /* ── Star required ── */
+        .star {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        /* ── Buttons ── */
+        #btnSave {
+            background: #28a745;
+            border: none;
+            padding: 8px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 14px;
+            color: white;
+        }
+
+            #btnSave:hover {
+                background: #218838;
+            }
+
+        #btnClear {
+            background: #dc3545;
+            border: none;
+            padding: 8px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 14px;
+            color: white;
+        }
+
+            #btnClear:hover {
+                background: #c82333;
+            }
+
+        #btnClose {
+            background: #ffc107;
+            border: none;
+            padding: 8px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #333;
+        }
+
+            #btnClose:hover {
+                background: #e0a800;
+            }
+
+        /* Column dividers */
+        .modal-body .row > .col-md-4:not(:last-child) {
+            border-right: 1px dashed #e0e0e0;
+        }
+
+        /* Section label for radio */
+        .input-group-custom > .labelup {
+            z-index: 1;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="Main-Container">
+        <div class="grid-container">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <div class="breadcrumb-row">
+                        <span class="breadcrumb-home">🏠 Home</span>
+                        <span class="breadcrumb-arrow"> > </span>
+                        <span class="breadcrumb-current">Master | Users List</span>
+                    </div>
+                    <h2>Users List</h2>
+                </div>
+                <div class="top-bar-right">
+                    <button class="btn-print">🖨️ Print</button>
+                    <button class="btn-add" id="btnAddUser">+ Add</button>
+                </div>
+            </div>
+
+            <div class="Table-Container">
+                <div id="grid-Users-lists"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="modal fade" id="addUserModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+
+                <!-- HEADER -->
+                <div class="modal-header">
+                    <h5 class="modal-title">Add User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- BODY -->
+                <div class="modal-body">
+                    <input type="hidden" id="hdnCustomerID" value="0">
+
+                    <div class="row g-3">
+
+                        <!-- 🔹 COLUMN 1 -->
+                        <div class="col-md-4">
+
+                            <div class="input-group-custom">
+                                <i class="fa-solid fa-id-card"></i>
+                                <input type="text" id="txtUserID" class="form-control-custom" placeholder="User ID">
+                                <label class="labelup">User ID <span class="star">*</span></label>
+                            </div>
+                            <div id="err_UserID" class="error-msg">User ID is required</div>
+
+                            <div class="input-group-custom">
+                                <i class="fa-solid fa-lock"></i>
+                                <input type="password" id="Signuppassword" class="form-control-custom" placeholder="Enter Password">
+                                <label class="labelup">Password <span class="star">*</span></label>
+                            </div>
+                            <div id="err_Password" class="error-msg">Password is required</div>
+
+                            <div class="input-group-custom">
+                                <i class="fa-solid fa-phone"></i>
+                                <input type="text" id="SignupMobNo" class="form-control-custom" placeholder="Mobile" maxlength="10">
+                                <label class="labelup">Mobile No<span class="star">*</span></label>
+                            </div>
+                            <div id="err_SignupMobNo" class="error-msg">Enter 10 digit number</div>
+
+
+                            <!-- File -->
+                            <div class="input-group-custom">
+                                <input type="file" id="txtFile" class="form-control-custom" placeholder="Attachment">
+                                <label class="labelup">Attachments</label>
+                            </div>
+
+                        </div>
+
+                        <!-- 🔹 COLUMN 2 -->
+                        <div class="col-md-4">
+
+                            <div class="input-group-custom">
+                                <i class="fa-solid fa-user"></i>
+                                <input type="text" id="txtUserName" class="form-control-custom" placeholder="User Name">
+                                <label class="labelup">User Name <span class="star">*</span></label>
+                            </div>
+                            <div id="err_UserName" class="error-msg">User Name is required</div>
+
+                            <div class="input-col">
+                                <div class="input-group-custom">
+                                    <i class="fa-solid fa-check-double"></i>
+                                    <input type="password" id="SignupConfirmpassword" class="form-control-custom" placeholder="Confirm">
+                                    <label class="labelup">Confirm Password<span class="star">*</span></label>
+                                </div>
+                                <div id="err_SignupConfirmpassword" class="error-msg">Passwords do not match</div>
+                            </div>
+
+                            <div class="input-group-custom mt-4">
+                                <i class="fa-solid fa-envelope"></i>
+                                <input type="email" id="forgotEmail" class="form-control-custom" placeholder="Email Address">
+                                <label class="labelup">Email Address<span class="star">*</span></label>
+                            </div>
+                            <div id="err_forgotEmail" class="error-msg">Valid email is required</div>
+
+                            <div class="input-group-custom">
+                                <input type="text" id="txtEmpNo" class="form-control-custom" placeholder="Employee No">
+                                <label class="labelup">Employee No</label>
+                            </div>
+                            <div id="err_EmpNo" class="error-msg">Version is required</div>
+
+                            <div class="mt-2">
+                                <input type="checkbox" id="chkActive"> Active
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- FOOTER -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="btnClear">
+                        <span class="glyphicon glyphicon-refresh"> Clear</span>
+                    </button>
+
+                    <button type="button" onclick="return save()" class="btn btn-success" id="btnSave">
+                        <span class="glyphicon glyphicon-saved"> Save</span>
+                    </button>
+
+                    <button type="button" class="btn btn-warning" id="btnClose">
+                        <i class="bi bi-x-circle"></i> Close
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const Aurl = '@Session["APIurl"]';
+        console.log("AURL Value: ", Aurl)
+
+        const addModal = new bootstrap.Modal(document.getElementById('addUserModal'));
+
+        $('#btnAddUser').click(function () {
+            document.getElementById('hdnCustomerID').value = "0";
+            const chkActive = document.getElementById('chkActive');
+            chkActive.checked = true;
+            chkActive.disabled = true;
+            addModal.show();
+        });
+
+        document.getElementById('btnClose').addEventListener('click', function () {
+            ['txtUserID', 'Signuppassword', 'SignupMobNo', 'txtFile',
+                'txtUserName', 'SignupConfirmpassword', 'forgotEmail', 'txtEmpNo',
+                'chkActive'
+            ].forEach(function (id) {
+                const el = document.getElementById(id);
+                if (el) el.disabled = false;
+            });
+
+            document.querySelectorAll('input[name="shineType"], input[name="userType"]')
+                .forEach(r => r.disabled = false);
+
+            // Show buttons back
+            document.getElementById('btnSave').style.display = 'block';
+            document.getElementById('btnClear').style.display = 'block';
+
+            addModal.hide();
+        });
+
+        //var UserColumns = [
+        //    {
+        //        "field": "UserID",
+        //        "header": "User ID",
+        //        "type": "label",
+        //        "width": 200,
+        //        "align": "left",
+        //        "visible": true,
+        //        "EnableColumnMenu": true,
+        //        "ShowinColumnOption": true,
+        //        "Total": false,
+        //        "TotalYN": "0",
+        //        "EnableSum": false,
+        //        "EnableAvg": false,
+        //        "EnableCount": false,
+        //        "EnableUnique": false,
+        //        "precision": "2",
+        //        "ClickPopup": false,
+        //        "Printwidth": 200,
+        //        "PrintYN": false,
+        //        "PrintColumnName": "User ID"
+        //    },
+        //    {
+        //        "field": "Mobilenumber",
+        //        "header": "Mobile No",
+        //        "type": "label",
+        //        "width": 200,
+        //        "align": "left",
+        //        "visible": true,
+        //        "EnableColumnMenu": true,
+        //        "ShowinColumnOption": true,
+        //        "Total": false,
+        //        "TotalYN": "0",
+        //        "EnableSum": false,
+        //        "EnableAvg": false,
+        //        "EnableCount": false,
+        //        "EnableUnique": false,
+        //        "precision": "2",
+        //        "ClickPopup": false,
+        //        "Printwidth": 200,
+        //        "PrintYN": false,
+        //        "PrintColumnName": "Mobile No"
+        //    },
+        //    {
+        //        "field": "Attachments",
+        //        "header": "Attachments",
+        //        "type": "file",
+        //        "width": 200,
+        //        "align": "left",
+        //        "visible": false,
+        //        "EnableColumnMenu": false,
+        //        "ShowinColumnOption": true,
+        //        "Total": false,
+        //        "TotalYN": "0",
+        //        "EnableSum": false,
+        //        "EnableAvg": false,
+        //        "EnableCount": false,
+        //        "EnableUnique": false,
+        //        "precision": "0",
+        //        "ClickPopup": false,
+        //        "Printwidth": 200,
+        //        "PrintYN": false,
+        //        "PrintColumnName": "Attachments"
+        //    },
+        //    {
+        //        "field": "UserName",
+        //        "header": "User Name",
+        //        "type": "label",
+        //        "width": 200,
+        //        "align": "left",
+        //        "visible": true,
+        //        "EnableColumnMenu": true,
+        //        "ShowinColumnOption": true,
+        //        "Total": false,
+        //        "TotalYN": "0",
+        //        "EnableSum": false,
+        //        "EnableAvg": false,
+        //        "EnableCount": false,
+        //        "EnableUnique": false,
+        //        "precision": "2",
+        //        "ClickPopup": false,
+        //        "Printwidth": 200,
+        //        "PrintYN": false,
+        //        "PrintColumnName": "User Name"
+        //    },
+        //    {
+        //        "field": "EMailID",
+        //        "header": "Email Address",
+        //        "type": "label",
+        //        "width": 200,
+        //        "align": "left",
+        //        "visible": true,
+        //        "EnableColumnMenu": true,
+        //        "ShowinColumnOption": true,
+        //        "Total": false,
+        //        "TotalYN": "0",
+        //        "EnableSum": false,
+        //        "EnableAvg": false,
+        //        "EnableCount": false,
+        //        "EnableUnique": false,
+        //        "precision": "2",
+        //        "ClickPopup": false,
+        //        "Printwidth": 200,
+        //        "PrintYN": false,
+        //        "PrintColumnName": "Email Address"
+        //    },
+        //    {
+        //        "field": "EmployeeNo",
+        //        "header": "Employee No",
+        //        "type": "label",
+        //        "width": 200,
+        //        "align": "left",
+        //        "visible": true,
+        //        "EnableColumnMenu": true,
+        //        "ShowinColumnOption": true,
+        //        "Total": false,
+        //        "TotalYN": "0",
+        //        "EnableSum": false,
+        //        "EnableAvg": false,
+        //        "EnableCount": false,
+        //        "EnableUnique": false,
+        //        "precision": "2",
+        //        "ClickPopup": false,
+        //        "Printwidth": 200,
+        //        "PrintYN": false,
+        //        "PrintColumnName": "Employee No"
+        //    },
+        //    {
+        //        "field": "Active",
+        //        "header": "Active",
+        //        "type": "label",
+        //        "width": 200,
+        //        "align": "left",
+        //        "visible": true,
+        //        "EnableColumnMenu": true,
+        //        "ShowinColumnOption": true,
+        //        "Total": false,
+        //        "TotalYN": "0",
+        //        "EnableSum": false,
+        //        "EnableAvg": false,
+        //        "EnableCount": false,
+        //        "EnableUnique": false,
+        //        "precision": "2",
+        //        "ClickPopup": false,
+        //        "Printwidth": 200,
+        //        "PrintYN": false,
+        //        "PrintColumnName": "Active"
+        //    },
+        //    {
+        //        "field": "ID",
+        //        "header": "Action",
+        //        "type": "action3dots",
+        //        "width": 80,
+        //        "align": "center",
+        //        "visible": true,
+        //        "EnableColumnMenu": false,
+        //        "ShowinColumnOption": false,
+        //        "Total": false,
+        //        "TotalYN": "0",
+        //        "EnableSum": false,
+        //        "EnableAvg": false,
+        //        "EnableCount": false,
+        //        "EnableUnique": false,
+        //        "precision": "2",
+        //        "ClickPopup": false,
+        //        "Printwidth": 80,
+        //        "PrintYN": false,
+        //        "PrintColumnName": "Action"
+        //    },
+        //];
+        const allGridActions = [
+            {
+                icon: '✏️',
+                title: 'Edit',
+                displayType: 'single_icon',
+                handler: function (row) {
+                    openEditModal(row);
+                }
+            },
+            {
+                icon: '👁️',
+                title: 'View',
+                displayType: 'single_icon',
+                handler: function (row) {
+                    openViewModal(row);
+                }
+            }
+        ];
+        var UserColumns = [];
+        const singleIconAction = allGridActions.filter(a => a.displayType === 'single_icon');
+        const menuActions = [];
+
+
+        var actions = {
+            "header": "Action",
+            "type": "action",
+            "width": 80,
+            "align": "center",
+            "visible": true,
+            "specialColumn": true,
+            "ShowinColumnOption": false,
+            "actions": allGridActions
+        };
+
+        GetColumnSettingsData(2, 4, 1);
+
+            $(document).ready(function () {
+                loadDashboardGrid(1002, 1, '#grid-Users-lists', "uspgetuserslist", "", UserColumns);
+    });
+
+    function loadDashboardGrid(reportId, tableId, selector, apiEndpoint, headings, columns) {
+
+    const userId = sessionStorage.getItem("userID");
+
+        $.get(Aurl + "users/GetUserList", function (rowData) {
+            console.log("Row Data:", rowData);
+        console.log("Row Data for " + apiEndpoint, rowData);
+            new GKBSDynamicGrid('#grid-Users-lists', UserColumns, rowData, {
+            enablePagination: true,
+            pageSize: 10,
+            height: "200px",
+            enableSearch: true,
+            stickyToWindow: true,
+            enableExport: false,
+            enablePrint: false,
+            enableColumnsBtn: false,
+            enableAddRow: false,
+            enableRemoveRow: false,
+            enableSorting: true,
+            searchTerm: "",
+            CompanyName: "GKBS Support",
+                ReportName: "",
+                singleIconAction: singleIconAction, // Pass the single View action
+                rowActionsMenu: menuActions, 
+        });
+    }).fail(function(xhr) {
+        console.error("Row Data FAILED for " + apiEndpoint, xhr.status, xhr.responseText);
+    });
+    }
+
+        function save() {
+            if (!validateAll()) return;
+
+            const userId = sessionStorage.getItem("userID");
+            const ID = document.getElementById('hdnCustomerID').value;
+
+            const payload = {
+                ID: ID,
+                UserID: document.getElementById('txtUserID').value.trim(),
+                UserName: document.getElementById('txtUserName').value.trim(),
+                Password: document.getElementById('Signuppassword').value.trim(),
+                Mobilenumber: document.getElementById('SignupMobNo').value.trim(),
+                EMailID: document.getElementById('forgotEmail').value.trim(),
+                EmployeeNo: document.getElementById('txtEmpNo').value.trim(),
+                Active: document.getElementById('chkActive').checked ? "1" : "0",
+                CBy: userId 
+            };
+
+            $.ajax({
+                url: Aurl + "Users/Save",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(payload),
+                success: function (res) {
+                    if (res && res.length > 0 && res[0].Status === "Success") {
+                        showSuccessSnackbar(res[0].Message);
+                        addModal.hide();
+                        document.getElementById('btnClear').click();
+                        loadDashboardGrid(1002, 1, '#grid-Users-lists', "uspgetuserslist", "", UserColumns);
+                    } else {
+                        showErrorSnackbar((res[0] ? res[0].Message : "Something went wrong"));
+                    }
+                },
+                error: function (xhr) {
+                    showErrorSnackbar("Error: " + xhr.responseText);
+                }
+            });
+        }
+
+
+        function openEditModal(row) {
+            document.getElementById('hdnCustomerID').value = row.ID;
+            document.getElementById('txtUserID').value = row.UserID || '';
+            document.getElementById('txtUserName').value = row.UserName || '';
+            document.getElementById('Signuppassword').value = row.Password || '';
+            document.getElementById('SignupConfirmpassword').value = row.Password || '';
+            document.getElementById('SignupMobNo').value = row.Mobilenumber || '';
+            document.getElementById('forgotEmail').value = row.EMailID || '';
+            document.getElementById('txtEmpNo').value = row.EmployeeNo || '';
+
+            const chkActive = document.getElementById('chkActive');
+            chkActive.checked = row.Active === 'True' || row.Active === '1';
+            chkActive.disabled = false;
+
+            document.querySelector('.modal-title').textContent = 'Edit User';
+            document.getElementById('btnSave').style.display = 'block';
+            document.getElementById('btnClear').style.display = 'block';
+            addModal.show();
+        }
+
+        // ── View Modal ──
+        function openViewModal(row) {
+            document.getElementById('hdnCustomerID').value = row.ID;
+            document.getElementById('txtUserID').value = row.UserID || '';
+            document.getElementById('txtUserName').value = row.UserName || '';
+            document.getElementById('Signuppassword').value = row.Password || '';
+            document.getElementById('SignupConfirmpassword').value = row.Password || '';
+            document.getElementById('SignupMobNo').value = row.Mobilenumber || '';
+            document.getElementById('forgotEmail').value = row.EMailID || '';
+            document.getElementById('txtEmpNo').value = row.EmployeeNo || '';
+
+            const chkActive = document.getElementById('chkActive');
+            chkActive.checked = row.Active === 'True' || row.Active === '1';
+            chkActive.disabled = true;
+
+            ['txtUserID', 'txtUserName', 'Signuppassword', 'SignupConfirmpassword',
+                'SignupMobNo', 'forgotEmail', 'txtEmpNo'
+            ].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.disabled = true;
+            });
+
+            document.querySelector('.modal-title').textContent = 'View User';
+            document.getElementById('btnSave').style.display = 'none';
+            document.getElementById('btnClear').style.display = 'none';
+            addModal.show();
+        }
+
+        function showErr(errId, msg) {
+            const el = document.getElementById(errId);
+            if (el) {
+                el.textContent = msg;
+                el.style.display = 'block';
+            }
+        }
+
+        function hideErr(errId) {
+            const el = document.getElementById(errId);
+            if (el) el.style.display = 'none';
+        }
+
+        function setError(inputId) {
+            const el = document.getElementById(inputId);
+            if (el) {
+                el.style.border = '1.5px solid #dc3545';
+                el.style.boxShadow = '0 0 0 3px rgba(220,53,69,0.15)';
+            }
+        }
+
+        function setValid(inputId) {
+            const el = document.getElementById(inputId);
+            if (el) {
+                el.style.border = '1.5px solid #28a745';
+                el.style.boxShadow = '0 0 0 3px rgba(40,167,69,0.12)';
+            }
+        }
+
+
+        function validateRequired(inputId, errId, label) {
+            const el = document.getElementById(inputId);
+            if (!el) return true;
+            const val = el.value.trim();
+            if (!val) {
+                showErr(errId, label + ' is required');
+                setError(inputId);
+                return false;
+            }
+            hideErr(errId);
+            setValid(inputId);
+            return true;
+        }
+
+        function validateMobile() {
+            const el = document.getElementById('SignupMobNo');
+            const val = el.value.trim();
+            if (!val) {
+                showErr('err_SignupMobNo', 'Mobile No is required');
+                setError('SignupMobNo');
+                return false;
+            } else if (!/^\d{10}$/.test(val)) {
+                showErr('err_SignupMobNo', 'Enter valid 10 digit number');
+                setError('SignupMobNo');
+                return false;
+            }
+            hideErr('err_SignupMobNo');
+            setValid('SignupMobNo');
+            return true;
+        }
+
+        function validateEmail() {
+            const el = document.getElementById('forgotEmail');
+            const val = el.value.trim();
+            const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/; // @@ for .NET Razor
+            if (!val) {
+                showErr('err_forgotEmail', 'Email Address is required');
+                setError('forgotEmail');
+                return false;
+            } else if (!emailRegex.test(val)) {
+                showErr('err_forgotEmail', 'Invalid email format');
+                setError('forgotEmail');
+                return false;
+            }
+            hideErr('err_forgotEmail');
+            setValid('forgotEmail');
+            return true;
+        }
+
+        function validateConfirmPassword() {
+            const p1 = document.getElementById('Signuppassword').value.trim();
+            const p2 = document.getElementById('SignupConfirmpassword').value.trim();
+            if (!p2) {
+                showErr('err_SignupConfirmpassword', 'Confirm Password is required');
+                setError('SignupConfirmpassword');
+                return false;
+            } else if (p1 !== p2) {
+                showErr('err_SignupConfirmpassword', 'Passwords do not match');
+                setError('SignupConfirmpassword');
+                return false;
+            }
+            hideErr('err_SignupConfirmpassword');
+            setValid('SignupConfirmpassword');
+            return true;
+        }
+
+        function validateAll() {
+            let ok = true;
+            if (!validateRequired('txtUserID', 'err_UserID', 'User ID')) ok = false;
+            if (!validateRequired('txtUserName', 'err_UserName', 'User Name')) ok = false;
+            if (!validateRequired('Signuppassword', 'err_Password', 'Password')) ok = false;
+            if (!validateConfirmPassword()) ok = false;
+            if (!validateMobile()) ok = false;
+            if (!validateEmail()) ok = false;
+            return ok;
+        }
+
+        // --- 3. Live Attachment Helper ---
+        function attachLiveValidation(inputId, errId, label, customFn) {
+            const el = document.getElementById(inputId);
+            if (!el) return;
+            const run = () => customFn ? customFn() : validateRequired(inputId, errId, label);
+            el.addEventListener('blur', run);
+            el.addEventListener('input', run);
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Attach Live Events
+            attachLiveValidation('txtUserID', 'err_UserID', 'User ID');
+            attachLiveValidation('txtUserName', 'err_UserName', 'User Name');
+            attachLiveValidation('Signuppassword', 'err_Password', 'Password');
+            attachLiveValidation('SignupConfirmpassword', 'err_SignupConfirmpassword', 'Confirm', validateConfirmPassword);
+            attachLiveValidation('SignupMobNo', 'err_SignupMobNo', 'Mobile', validateMobile);
+            attachLiveValidation('forgotEmail', 'err_forgotEmail', 'Email', validateEmail);
+
+            // Mobile Digit Restrictor
+            const mobEl = document.getElementById('SignupMobNo');
+            if (mobEl) {
+                mobEl.addEventListener('keypress', (e) => {
+                    if (!/[0-9]/.test(e.key)) e.preventDefault();
+                });
+            }
+
+            document.getElementById('Signuppassword').addEventListener('input', function () {
+                if (document.getElementById('SignupConfirmpassword').value) validateConfirmPassword();
+            });
+
+
+            const btnClear = document.getElementById('btnClear');
+            if (btnClear) {
+                btnClear.addEventListener('click', function () {
+                    document.querySelectorAll('.form-control-custom').forEach(el => {
+                        el.style.border = '1.5px solid #ced4da';
+                        el.style.boxShadow = 'none';
+                        el.value = '';
+                    });
+                    document.querySelectorAll('[id^="err_"]').forEach(el => el.style.display = 'none');
+                });
+            }
+        });
+
+        function GetColumnSettingsData(nMode, nFormID, nTableID) {
+            $.ajax({
+                url: Aurl + "columnsettings/getcolumnsettings",
+                type: 'get',
+                contentType: 'json',
+                data: { Mode: nMode, FormID: nFormID, TableID: nTableID, FormorReport: 0 },
+                async: false,
+                success: function (data) {
+                    console.log("API Response:", data);
+                    console.log("Data length:", data.length);
+                    if (data.length > 0) {
+                        UserColumns = (data);
+                        console.log("columns : ", UserColumns);
+                        UserColumns.push(actions);
+                    } else {
+                        showErrorSnackbar("No column data found");
+                    }
+                }
+            });
+        }
+
+    </script>
+
+</body>
+</html>

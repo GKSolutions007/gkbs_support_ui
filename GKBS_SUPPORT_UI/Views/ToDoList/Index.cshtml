@@ -1,0 +1,592 @@
+﻿
+@{
+    ViewBag.Title = "ToDoList";
+    Layout = "~/Views/Shared/_LayoutNav1.cshtml";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Master</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="~/Content/5.3.8/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/GKBS_GRID_2.0/css/gridui.css" rel="stylesheet" />
+    <script src="~/Scripts/5.3.8/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="~/Content/Snackbar.css" rel="stylesheet" />
+    <script src="~/Scripts/Validation.js"></script>
+    <script src="~/GKBS_GRID_2.0/js/gridui.js"></script>
+
+    <style>
+
+        .Main-Container {
+            padding-bottom: 70px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            margin-bottom: 15px;
+        }
+
+        .breadcrumb-row {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .breadcrumb-home {
+            color: #1a73e8;
+        }
+
+        .top-bar-left h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        /* ✅ Status Counts - plain text like Angular */
+        .status-counts {
+            display: flex;
+            gap: 30px;
+            padding: 10px 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+            .status-counts span {
+                font-weight: 700;
+                font-size: 14px;
+                color: #333;
+            }
+
+        /* ✅ Toolbar */
+        .todo-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 20px;
+            margin-bottom: 8px;
+        }
+
+        .todo-toolbar-left {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn-add-row {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 7px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+            .btn-add-row:hover {
+                background: #1558b0;
+            }
+
+        .toggle-all-label {
+            font-size: 13px;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        /* ✅ Fixed Bottom Action Bar - mirrors Angular */
+        .bottom-action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #ddd;
+            padding: 12px 30px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            z-index: 999;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+        }
+
+        #btnSaveAll {
+            background: #28a745;
+            border: none;
+            padding: 8px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 14px;
+            color: white;
+        }
+
+            #btnSaveAll:hover {
+                background: #218838;
+            }
+
+        #btnClear {
+            background: #dc3545;
+            border: none;
+            padding: 8px 24px;
+            font-weight: 600;
+            border-radius: 8px;
+            font-size: 14px;
+            color: white;
+        }
+
+            #btnClear:hover {
+                background: #c82333;
+            }
+
+
+        .Table-Container {
+            height: calc(100vh - 280px); /* fixed height based on viewport */
+            overflow: hidden;
+            padding: 0 20px;
+        }
+
+        #grid-todo-list {
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="Main-Container">
+        <div class="grid-container">
+
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <div class="breadcrumb-row">
+                        <span class="breadcrumb-home">🏠 Home</span>
+                        <span class="breadcrumb-arrow"> > </span>
+                        <span class="breadcrumb-current">Transactions | To Do List</span>
+                    </div>
+                    <h2>To Do List</h2>
+                </div>
+            </div>
+
+            <div class="status-counts">
+                <span id="badge-open">OPEN: 0</span>
+                <span id="badge-close">CLOSE: 0</span>
+                <span id="badge-assign">ASSIGN: 0</span>
+                <span id="badge-na">NA: 0</span>
+                <span id="badge-reopen">REOPEN: 0</span>
+                <span id="badge-total">TOTAL: 0</span>
+            </div>
+
+            <!-- ✅ Toolbar -->
+            <div class="todo-toolbar">
+                <div class="todo-toolbar-left">
+                    <button class="btn-add-row" id="btnAddRow">Add Row</button>
+                    <label class="toggle-all-label">
+                        <input type="checkbox" id="chkShowAll"> Show All Status
+                    </label>
+                </div>
+            </div>
+
+            <!-- Grid -->
+            <div class="Table-Container">
+                <div id="grid-todo-list"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ✅ Fixed Bottom Bar - mirrors Angular -->
+    <!--<div class="bottom-action-bar">
+        <button class="btn-clear-bottom" id="btnClear">
+            ✖ Clear
+        </button>
+        <button class="btn-save-bottom" id="btnSaveAll">
+            💾 Save
+        </button>
+    </div>-->
+
+
+    <!-- FOOTER -->
+    <div class="bottom-action-bar">
+        <button type="button" class="btn btn-danger" id="btnClear">
+            <span class="glyphicon glyphicon-refresh"> Clear</span>
+        </button>
+
+        <button type="button" class="btn btn-success" id="btnSaveAll">
+            <span class="glyphicon glyphicon-saved"> Save</span>
+        </button>
+
+    </div>
+
+    <script>
+    const Aurl = '@Session["APIurl"]';
+    const userId = sessionStorage.getItem("userID");
+
+    const statusList = [
+        { label: 'Open',   value: 1 },
+        { label: 'Reopen', value: 2 },
+        { label: 'Assign', value: 3 },
+        { label: 'NA',     value: 4 },
+        { label: 'Close',  value: 5 }
+    ];
+
+    let originalTableData = [];
+    let userList = [];
+    let grid = null;
+    let showAllStatus = false;
+    let tempIdCounter = 0;
+    var TodoColumns = [];
+
+    GetColumnSettingsData(2, 5, 1);
+    loadUserList();
+
+    $('#btnAddRow').on('click', function () {
+        tempIdCounter--;
+        const newRow = {
+            SNo: tempIdCounter,
+            DisplaySNo: '',
+            Description: '',
+            DurationInHrs: 0,
+            AssignTo: '',       // blank string so dropdown shows empty
+            Status: 'Open',     // show label directly
+            CBy: '',
+            CDate: '',
+            _StatusID: 1,       // internal — real numeric status
+            _AssignToID: null,  // internal — real numeric user id
+            isNew: true
+        };
+        originalTableData.push(newRow);
+        updateBadges();
+        renderGrid();
+    });
+
+    $('#chkShowAll').on('change', function () {
+        showAllStatus = $(this).is(':checked');
+        renderGrid();
+    });
+
+    $('#btnClear').on('click', function () {
+        if (confirm('Are you sure you want to clear all changes?')) {
+            loadToDoWork();
+        }
+    });
+
+    $('#btnSaveAll').on('click', function () {
+        saveAll();
+    });
+
+    function loadUserList() {
+        $.ajax({
+            url: Aurl + "Transaction/getUserList",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({}),
+            success: function (res) {
+                if (res.success && res.data) {
+                    userList = res.data.map(u => ({ id: u.ID, name: u.UserName }));
+                }
+                injectOptionsIntoColumns();
+                loadToDoWork();
+            },
+            error: function () {
+                injectOptionsIntoColumns();
+                loadToDoWork();
+            }
+        });
+    }
+
+    // ✅ Patches API columns with real dropdown options
+    function injectOptionsIntoColumns() {
+        const statusLabels = statusList.map(s => s.label);
+        const userNames = ['', ...userList.map(u => u.name)];
+
+        TodoColumns.forEach(function (col) {
+
+            if (col.Field === 'SNo' || col.field === 'SNo') {
+                col.type = 'label';
+                col.Field = 'DisplaySNo'; 
+                col.field = 'DisplaySNo';
+            }
+
+            // AssignTo — inject user name list as dropdown options
+            if (col.Field === 'AssignTo' || col.field === 'AssignTo') {
+                col.type = 'dropdown';
+                col.Field = 'AssignTo';
+                col.field = 'AssignTo';
+                col.options = userNames;
+                col.visible = true;
+            }
+
+            // Status — inject status label list as dropdown options
+            if (col.Field === 'Status' || col.field === 'Status') {
+                col.type = 'dropdown';
+                col.Field = 'Status';
+                col.field = 'Status';
+                col.options = statusLabels;
+                col.visible = true;
+            }
+
+            // Hide CBy and CDate
+            if (col.Field === 'CBy' || col.field === 'CBy' ||
+                col.Field === 'CDate' || col.field === 'CDate') {
+                col.visible = false;
+            }
+        });
+
+        console.log("Columns after inject:", TodoColumns);
+    }
+
+    function loadToDoWork() {
+        $.ajax({
+            url: Aurl + "Transaction/getToDoWork",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({}),
+            success: function (res) {
+                console.log("API response:", res);
+                if (res.success && res.data) {
+                    originalTableData = res.data.map(row => {
+                        const statusObj = statusList.find(s => s.value === row.Status);
+                        const user = userList.find(u => u.id === row.AssignTo);
+                        return {
+                            SNo: row.SNo,
+                            DisplaySNo: row.SNo,
+                            Description:  row.Description,
+                            DurationInHrs: row.DurationInHrs,
+                            // ✅ Store the LABEL in the field (dropdown shows text, not ID)
+                            AssignTo:     user ? user.name : '',
+                            Status:       statusObj ? statusObj.label : 'Open',
+                            // ✅ Keep real IDs hidden for save logic
+                            _AssignToID:  row.AssignTo || null,
+                            _StatusID:    row.Status || 1,
+                            CBy:          row.CBy,
+                            CDate:        '',
+                            disabled:     row.Status === 5
+                        };
+                    });
+                    updateBadges();
+                    renderGrid();
+                }
+            },
+            error: function (xhr) {
+                console.error("Error loading ToDo:", xhr.statusText);
+            }
+        });
+    }
+
+    function renderGrid() {
+        const dataToShow = showAllStatus
+            ? [...originalTableData]
+            : originalTableData.filter(r => r._StatusID === 1 || r._StatusID === 2 || r.isNew === true);
+
+        grid = new GKBSDynamicGrid('#grid-todo-list', TodoColumns, dataToShow, {
+            height: 'calc(100vh - 320px)',
+            enableSearch: true,
+            enableAddRow: false,
+            enableSorting: true,
+            stickyToWindow: true,
+            onCellChange: function (field, value, row) {
+
+                row.isNew = true;
+
+                // ✅ When user picks a name from AssignTo dropdown
+                if (field === 'AssignTo') {
+                    if (!value || value === '') {
+                        row.AssignTo   = '';
+                        row._AssignToID = null;
+                        row._StatusID  = 1;
+                        row.Status     = 'Open';
+
+                        // Update Status dropdown in DOM
+                        updateStatusInDOM(row, 'Open');
+
+                    } else {
+                        const user = userList.find(u => u.name === value);
+                        if (user) {
+                            row.AssignTo    = user.name;
+                            row._AssignToID = user.id;
+                            row._StatusID   = 3;
+                            row.Status      = 'Assign';
+
+                            // ✅ Auto-change Status dropdown to "Assign"
+                            updateStatusInDOM(row, 'Assign');
+                        }
+                    }
+                }
+
+                // ✅ When user changes Status dropdown
+                if (field === 'Status') {
+                    const s = statusList.find(x => x.label === value);
+                    if (s) {
+                        row._StatusID = s.value;
+                        row.Status    = s.label;
+                        row.disabled  = (s.value === 5);
+                    }
+                }
+
+                console.log("onCellChange | field:", field, "| value:", value, "| _AssignToID:", row._AssignToID, "| _StatusID:", row._StatusID);
+
+                // ✅ Sync back to originalTableData
+                const idx = originalTableData.findIndex(r => r.SNo === row.SNo);
+                if (idx !== -1) {
+                    const { _gridId, ...cleanRow } = row;
+                    originalTableData[idx] = { ...originalTableData[idx], ...cleanRow };
+                } else {
+                    console.warn("Could not find row to sync! SNo:", row.SNo);
+                }
+
+                updateBadges();
+            }
+        });
+    }
+
+    // ✅ Updates the Status dropdown cell in the DOM without re-rendering the whole grid
+    function updateStatusInDOM(row, labelValue) {
+        const allRows = document.querySelectorAll('#grid-todo-list .dg-row');
+        allRows.forEach(function (rowEl) {
+            const gridId = rowEl.getAttribute('data-grid-id');
+            if (gridId && row._gridId && gridId === row._gridId.toString()) {
+                const statusCell = rowEl.querySelector('[data-field="Status"]');
+                if (statusCell) {
+                    const select = statusCell.querySelector('select');
+                    if (select) select.value = labelValue;
+                }
+            }
+        });
+    }
+
+    function updateBadges() {
+        const counts = { Open: 0, Reopen: 0, Assign: 0, NA: 0, Close: 0 };
+        originalTableData.forEach(function (row) {
+            const s = statusList.find(x => x.value === row._StatusID);
+            if (s) counts[s.label]++;
+        });
+        $('#badge-open').text('OPEN: '     + counts.Open);
+        $('#badge-close').text('CLOSE: '   + counts.Close);
+        $('#badge-assign').text('ASSIGN: ' + counts.Assign);
+        $('#badge-na').text('NA: '         + counts.NA);
+        $('#badge-reopen').text('REOPEN: ' + counts.Reopen);
+        $('#badge-total').text('TOTAL: '   + originalTableData.length);
+    }
+
+    function saveAll() {
+        if (document.activeElement && $(document.activeElement).closest('#grid-todo-list').length > 0) {
+            document.activeElement.blur();
+        }
+
+        const errors = [];
+        const descMap = {};
+        const finalPayloads = [];
+
+        const currentGridData = grid ? grid.getOriginalData() : [];
+
+        if (currentGridData.length === 0) {
+            showSuccessSnackbar("Nothing to save.");
+            return;
+        }
+
+        currentGridData.forEach(function (gridRow, i) {
+            // Match back to originalTableData to get the hidden _AssignToID and _StatusID
+            let sourceRow = originalTableData.find(r => r.SNo === gridRow.SNo) || {};
+
+            const mergedRow = {
+                SNo:          (gridRow.SNo > 0) ? gridRow.SNo : 0,
+                Description:  (gridRow.Description || '').trim(),
+                DurationInHrs: parseFloat(gridRow.DurationInHrs) || 0,
+                AssignTo:     sourceRow._AssignToID !== undefined ? sourceRow._AssignToID : null,
+                Status:       sourceRow._StatusID   !== undefined ? sourceRow._StatusID   : 1,
+                AssignToName: sourceRow.AssignTo || ''  // for validation display
+            };
+
+            if (!mergedRow.Description) {
+                errors.push('Row ' + (i + 1) + ': Description is required');
+            } else if (descMap[mergedRow.Description.toLowerCase()]) {
+                errors.push('Row ' + (i + 1) + ': Duplicate description');
+            } else {
+                descMap[mergedRow.Description.toLowerCase()] = true;
+            }
+
+            if (mergedRow.AssignToName && mergedRow.DurationInHrs === 0) {
+                errors.push('Row ' + (i + 1) + ': Duration required when task is assigned');
+            }
+
+            finalPayloads.push(mergedRow);
+        });
+
+        if (errors.length > 0) {
+            showErrorSnackbar(errors.join('\n'));
+            return;
+        }
+
+        let saveCount  = 0;
+        let errorCount = 0;
+        const total = finalPayloads.length;
+        const $btn  = $('#btnSaveAll');
+
+        $btn.prop('disabled', true).text('Saving...');
+
+        finalPayloads.forEach(function (row) {
+            $.ajax({
+                url: Aurl + "Transaction/saveToDoWork",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    SNo:          row.SNo,
+                    Description:  row.Description,
+                    DurationInHrs: row.DurationInHrs,
+                    AssignTo:     row.AssignTo,
+                    Status:       row.Status,
+                    CBy:          parseInt(userId) || 0
+                }),
+                success: function (res) {
+                    saveCount++;
+                    if (!res.success) errorCount++;
+                    if (saveCount === total) finish(errorCount, $btn);
+                },
+                error: function () {
+                    saveCount++;
+                    errorCount++;
+                    if (saveCount === total) finish(errorCount, $btn);
+                }
+            });
+        });
+    }
+
+    function finish(errorCount, $btn) {
+        $btn.prop('disabled', false).text('Save All');
+        if (errorCount === 0) {
+            showSuccessSnackbar("Saved successfully!");
+            loadToDoWork();
+        } else {
+            showErrorSnackbar("Errors occurred during save.");
+        }
+    }
+
+    function GetColumnSettingsData(nMode, nFormID, nTableID) {
+        $.ajax({
+            url: Aurl + "columnsettings/getcolumnsettings",
+            type: 'get',
+            contentType: 'json',
+            data: { Mode: nMode, FormID: nFormID, TableID: nTableID, FormorReport: 0 },
+            async: false,
+            success: function (data) {
+                console.log("Column API Response:", data);
+                if (data.length > 0) {
+                    TodoColumns = data;
+                } else {
+                    showErrorSnackbar("No column data found");
+                }
+            }
+        });
+    }
+    </script>
+</body>
+</html>
