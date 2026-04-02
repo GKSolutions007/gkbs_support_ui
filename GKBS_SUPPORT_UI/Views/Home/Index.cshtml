@@ -80,7 +80,7 @@ const userId = sessionStorage.getItem("userID");
                             ReportName: 'My Tasks',
                             onCellClick: function (row) {
                                 if (!row || !row.SNo) return;
-                                window.location.href = '/DailyActivity/Index?taskId=' + row.SNo + '&from=home&Type=Task';
+                                window.location.href = 'DailyActivity?taskId=' + row.SNo + '&from=home&Type=Task';
                             }
                         });
                     }
@@ -104,7 +104,7 @@ const userId = sessionStorage.getItem("userID");
                     ReportName: 'In-Progress Daily Tasks',
                     onCellClick: function (row) {
                         if (!row || !row.ID) return;
-                        window.location.href = '/DailyActivity/Index?OrgId=' + row.ID + '&from=home&Type=DailyActivity';
+                        window.location.href = 'DailyActivity?OrgId=' + row.ID + '&from=home&Type=DailyActivity';
                     }
                 });
             }

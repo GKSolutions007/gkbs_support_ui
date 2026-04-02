@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
 namespace GKBS_SUPPORT_UI.Controllers
 {
-    public class AppConfigController : Controller
+    public class ReportsNewController : Controller
     {
+        // GET: ReportsNew
         public ActionResult Index()
         {
             if (Session["LoginUserID"] == null)

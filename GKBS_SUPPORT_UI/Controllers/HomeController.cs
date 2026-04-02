@@ -17,8 +17,13 @@ namespace GKBS_SUPPORT_UI.Controllers
         public ActionResult Index()
         {
             if (Session["LoginUserID"] == null)
+            {
                 return RedirectToAction("Index", "Login");
-            return View();
+            }
+            else
+            {
+                return View();
+            }
         }
 
 
@@ -28,8 +33,8 @@ namespace GKBS_SUPPORT_UI.Controllers
         {
             DateTime dtMin = DateTime.Now, dtMax = DateTime.Now, dtValue = DateTime.Now;
             DateTime Date = DateTime.Now;
-            DateTime dtFinancialdate = Convert.ToDateTime(Session["F_SD"]).Date;
-            DateTime dtpF_ED = Convert.ToDateTime(Session["F_ED"]).Date;
+            DateTime dtFinancialdate = DateTime.Today.AddYears(-1); //Convert.ToDateTime(Session["F_SD"]).Date;
+            DateTime dtpF_ED = DateTime.Today;// Convert.ToDateTime(Session["F_ED"]).Date;
             if (TypeID == 0)//set ServerDate
             {
                 dtMin = dtFinancialdate;

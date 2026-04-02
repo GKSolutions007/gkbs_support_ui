@@ -11,9 +11,14 @@ namespace GKBS_SUPPORT_UI.Controllers
     {
         public ActionResult Index()
         {
-            string APIurl = BL.clsEncryptDecrypt.Decrypt(ConfigurationManager.AppSettings["apiurl"].ToString());
-            Session["APIurl"] = APIurl;
-            return View();
+            if (Session["LoginUserID"] == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            else
+            {
+                return View();
+            }
         }
 
     }

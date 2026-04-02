@@ -127,8 +127,10 @@
     <Compile Include="Controllers\DailyActivityController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
+    <Compile Include="Controllers\ReportsNewController.cs" />
     <Compile Include="Controllers\ToDoListController.cs" />
     <Compile Include="Controllers\UsersController.cs" />
+    <Compile Include="Controllers\ValidatePermissionController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -168,6 +170,8 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
+    <Content Include="Content\dataTables.bootstrap.min.css" />
+    <Content Include="Content\dataTables.dataTables.2.2.2.css" />
     <Content Include="Content\Snackbar.css" />
     <Content Include="favicon.ico" />
     <Content Include="GKBS_GRID_2.0\css\gridui.css" />
@@ -181,6 +185,9 @@
     <Content Include="Scripts\5.3.8\bootstrap.esm.min.js" />
     <Content Include="Scripts\5.3.8\bootstrap.js" />
     <Content Include="Scripts\5.3.8\bootstrap.min.js" />
+    <Content Include="Scripts\bootstrap-treeview.js" />
+    <Content Include="Scripts\bootstrap-typeahead.js" />
+    <Content Include="Scripts\bootstrap-typeahead.min.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />
@@ -210,15 +217,22 @@
     <Content Include="Scripts\5.3.8\bootstrap.js.map" />
     <Content Include="Scripts\5.3.8\bootstrap.min.js.map" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
+    <Content Include="Scripts\chosen.jquery.min.js" />
+    <Content Include="Scripts\datatable.js" />
+    <Content Include="Scripts\dataTables.2.2.2.js" />
+    <Content Include="Scripts\dataTables.bootstrap.min.js" />
+    <Content Include="Scripts\dataTables.buttons.min.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
     <Content Include="Scripts\jquery-3.7.0.slim.js" />
     <Content Include="Scripts\jquery-3.7.0.slim.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
+    <Content Include="Scripts\jquery.dataTables.min.js" />
     <Content Include="Scripts\jquery.validate.js" />
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="Scripts\jquerychoose.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\Validation.js" />
     <Content Include="Web.config" />
@@ -242,10 +256,13 @@
     <Content Include="Views\AppConfig\Index.cshtml" />
     <Content Include="Views\DailyActivity\Index.cshtml" />
     <Content Include="Views\ToDoList\Index.cshtml" />
+    <Content Include="Views\ReportsNew\Index.cshtml" />
+    <Content Include="Views\Shared\_LayoutReports.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="NewFolder1\" />
+    <Folder Include="Views\ValidatePermission\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.rtl.min.css.map" />
