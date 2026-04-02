@@ -649,7 +649,7 @@ function Login() {
         data: { UserName: strusername, Password: strpassword },
         success: function (response) {
             console.log("API Response:", response);
-            $("#loadingDiv").remove(); // ✅ Remove loader after API responds
+            
 
             if (response && response.length > 0) {
                 var user = response[0];
@@ -663,6 +663,7 @@ function Login() {
                         { userID: user.ID, userName: user.UserName },
                         function (res) {
                             if (res.success) {
+                                $("#loadingDiv").remove(); // ✅ Remove loader after API responds
                                 $("#txtUserName").val("");
                                 $("#txtPassword").val("");
                                 setTimeout(function () {
