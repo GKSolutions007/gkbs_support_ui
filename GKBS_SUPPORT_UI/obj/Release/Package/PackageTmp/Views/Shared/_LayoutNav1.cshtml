@@ -8,12 +8,12 @@
     <title>@ViewBag.Title - GKBS</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="~/Content/5.3.8/bootstrap.min.css" rel="stylesheet" />
-    <link href="~/GKBS_Grid/css/gridui.css" rel="stylesheet" />
+    <link href="~/GKBS_GRID_2.0/css/gridui.css" rel="stylesheet" />
     <script src="~/Scripts/5.3.8/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="~/Content/Snackbar.css" rel="stylesheet" />
     <script src="~/Scripts/Validation.js"></script>
-    <script src="~/GKBS_Grid/js/gridui.js"></script>
+    <script src="~/GKBS_GRID_2.0/js/gridui.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -124,7 +124,7 @@
         }
 
         .sidebar {
-            width: 50px;
+            width: 0px;
             background: #fff;
             border-right: 1px solid #e0e0e0;
             display: flex;
@@ -145,11 +145,11 @@
             background: none;
             border: none;
             font-size: 20px;
-            color: #555;
+            color: white;
             cursor: pointer;
             padding: 10px 15px;
             display: block;
-            width: 100%; /* takes full width of sidebar */
+            
             text-align: right;
             position: sticky; /* stays at top always */
             top: 0;
@@ -212,9 +212,10 @@
 
         .submenu-item {
             padding: 8px 15px;
-            color: #555;
+            color: black;
             text-decoration: none;
             font-size: 13px;
+            font-weight:600;
             border-radius: 4px;
             white-space: nowrap;
             transition: background 0.2s, color 0.2s;
@@ -312,16 +313,28 @@
     </style>
 </head>
 <body>
+    @{ 
+        string User = Convert.ToString(Session["LoginUser"]);
+        string UIDs = Convert.ToString(Session["LoginUserID"]);
+        System.Data.DataTable dtParent = (System.Data.DataTable)Session["dtParent"];
+        System.Data.DataTable dtPermission = (System.Data.DataTable)Session["dtPermission"];
+
     <div class="toastBox"></div>
 
     <nav class="top-navbar">
-        <a href="@Url.Action("Index", "Home")" style="text-decoration: none; display: flex;">
-            <div class="navbar-left" style="cursor: pointer;">
-                <img src="~/Content/Images/Logo.png" alt="Logo" style="height:28px;" onerror="this.style.display='none'" />
-                <span class="company-name">GK BUSINESS &amp; SOLUTIONS</span>
-            </div>
-        </a>
+        <div class="navbar-left">
 
+
+            <span class="hamburger-btn" onclick="toggleSidebar()" title="Menu">
+                <i class="fa fa-bars"></i>
+            </span>
+            <a href="~/Home" style="text-decoration: none; display: flex;">
+                <div class="navbar-left" style="cursor: pointer;">
+                    <img src="~/Images/logo/G_large_Transparent.png" alt="Logo" style="height:28px;" onerror="this.style.display='none'" />
+                    <span class="company-name">GK BUSINESS &amp; SOLUTIONS</span>
+                </div>
+            </a>
+        </div>
         <div class="navbar-center">
             <div class="search-wrapper">
                 <i class="fa fa-search"></i>
@@ -350,53 +363,60 @@
 
     <div class="main-layout">
         <div class="sidebar" id="sidebar">
-            <span class="hamburger-btn" onclick="toggleSidebar()" title="Menu">
-                <i class="fa fa-bars"></i>
-            </span>
+           
 
             <div class="menu-container">
                 <div class="menu-item">
-                    <div class="menu-header" onclick="toggleSubMenu(this)">
-                        <i class="fa fa-database"></i>
-                        <span class="menu-text">Master</span>
-                        <i class="fa fa-chevron-down arrow"></i>
-                    </div>
-                    <div class="submenu">
-                        <a href="@Url.Action("Index", "Users")" class="submenu-item">Users</a>
-                        <a href="@Url.Action("Index", "Customer")" class="submenu-item">Customer</a>
-                    </div>
-                </div>
+                    @for (int iRow = 0; iRow < dtParent.Rows.Count; iRow++)
+                    {
+                        int nParentID = Convert.ToInt32(dtParent.Rows[iRow]["MenuId"]);
+                        int nTreeID = Convert.ToInt32(dtParent.Rows[iRow]["MenuTree"]);
+                        string IsMenus = Convert.ToString(dtParent.Rows[iRow]["IsMenu"]);
+                        string strManuName = Convert.ToString(dtParent.Rows[iRow]["MenuName"]);
+                        System.Data.DataRow[] dr = dtPermission.Select("MenuParentId=" + nParentID.ToString());
+                        //System.Data.DataRow[] dr = dtPermission.Select("MenuTree=" + nParentID.ToString());
+                        if (dr.Count() > 0)
+                        {
+                            if (strManuName == "Reports")
+                            {
+                                
+                                <a href="@Url.Action("Index", "ReportsNew")" class="menu-header menu-text" target="_blank">@strManuName</a>
+                            }
+                            else if (IsMenus == "1")
+                            {
+                                <div class="menu-header" onclick="toggleSubMenu(this)">
+                                    
+                                    <span class="menu-text">@strManuName</span>
+                                    <i class="fa fa-chevron-down arrow"></i>
+                                </div>
+                            }
+                            <div class="submenu">
+                                @{
+                                    for (int j = 0; j < dr.Length; j++)
+                                    {
+                                        int nChildParentID = Convert.ToInt32(dr[j]["MenuId"].ToString());
+                                        string displayName = dr[j]["MenuName"].ToString();
+                                        string controllerName = dr[j]["LocationName"].ToString();
+                                        IsMenus = dr[j]["IsMenu"].ToString();
+                                        if (IsMenus == "1" && strManuName != "Reports")
+                                        {
+                                            <a href="@Url.Action("Index", controllerName)" class="submenu-item">@displayName</a>
 
-                <div class="menu-item">
-                    <div class="menu-header" onclick="toggleSubMenu(this)">
-                        <i class="fa fa-tools"></i>
-                        <span class="menu-text">Tools</span>
-                        <i class="fa fa-chevron-down arrow"></i>
-                    </div>
-                    <div class="submenu">
-                        <a href="@Url.Action("Index", "Appconfig")" class="submenu-item">App Config</a>
-                    </div>
-                </div>
-
-                <div class="menu-item">
-                    <div class="menu-header" onclick="toggleSubMenu(this)">
-                        <i class="fa fa-exchange-alt"></i>
-                        <span class="menu-text">Transaction</span>
-                        <i class="fa fa-chevron-down arrow"></i>
-                    </div>
-                    <div class="submenu">
-                        <a href="@Url.Action("Index", "DailyActivity")" class="submenu-item">Daily Activity</a>
-                        <a href="@Url.Action("Index", "ToDoList")" class="submenu-item">To Do List</a>
-                    </div>
-                </div>
+                                        }
+                                    }
+                                }
+                            </div>
+                        }
+                    }
+                </div>                
             </div>
         </div>
-
+        
         <div class="content-area">
             @RenderBody()
         </div>
     </div>
-
+                                    }
     <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="border-radius:20px; border:none; padding:20px;">
@@ -429,11 +449,11 @@
 
     <script>
         $(document).ready(function () {
-            var uid = sessionStorage.getItem("userID");
-            var uname = sessionStorage.getItem("userName") || "User";
+            var uid = '@Session["LoginUserID"]';
+            var uname = '@Session["LoginUser"]';
             $("#lblUserName, #dropUserName").text(uname);
             $("#avatarIcon").text(uname.charAt(0).toUpperCase());
-            if (!uid) { window.location.href = '/Login/Index'; }
+            //if (!uid) { window.location.href = '/Login/Index'; }
 
             // Attach validation listeners
             var cpInputs = document.querySelectorAll('#changePasswordModal .form-control-custom');
@@ -526,7 +546,42 @@
                 }
             }
         }
+        addModuleIcons();
+        function addModuleIcons() {
+            // Icon mapping for common modules
+            const moduleIcons = {
+                'master': 'fas fa fa-database',
+                'transactions': 'fas fa-shopping-bag',
+                'reports': 'fas fa-chart-bar',
+                'tools': 'fas fa-tools',
+                'favourite': 'fa-regular fa-star',
+            };
 
+            // Find all dropdown buttons and menu items
+            $('.menu-text').each(function () {
+                const $element = $(this);
+                let text = $element.text().trim().toLowerCase();
+
+                // Check if icon already exists
+                if ($element.find('i.fas, i.fa').length > 0) {
+                    return; // Skip if icon already present
+                }
+
+                // Find matching icon
+                let iconClass = null;
+                for (let key in moduleIcons) {
+                    if (text == key) {//text.includes(key)
+                        iconClass = moduleIcons[key];
+                        break;
+                    }
+                }
+
+                // Add icon if found
+                if (iconClass) {
+                    $element.prepend('<i class="' + iconClass + '" style="margin-right: 8px; font-size: 13px;"></i>');
+                }
+            });
+        }
         function Logout() { sessionStorage.clear(); window.location.href = '@Url.Action("Index", "Login")'; }
     </script>
     @RenderSection("scripts", required: false)

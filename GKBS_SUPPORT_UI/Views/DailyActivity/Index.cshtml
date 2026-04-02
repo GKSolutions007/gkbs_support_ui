@@ -364,7 +364,7 @@
 </div>
     <script>
         const Aurl = '@Session["APIurl"]';
-        const userId = sessionStorage.getItem("userID");
+        const userId = '@Session["LoginUserID"]';
         let loadedCaseOrgID = null;
 
         const urlParams = new URLSearchParams(window.location.search);

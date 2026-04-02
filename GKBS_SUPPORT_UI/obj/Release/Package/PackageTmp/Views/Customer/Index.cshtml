@@ -11,12 +11,12 @@
     <link href="~/Content/5.3.8/bootstrap.min.css" rel="stylesheet" />
     <link href="~/GKBS_GRID_2.0/css/gridui.css" rel="stylesheet" />
     <script src="~/Scripts/5.3.8/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link href="~/Content/Snackbar.css" rel="stylesheet" />
     <script src="~/Scripts/Validation.js"></script>
     <script src="~/GKBS_GRID_2.0/js/gridui.js"></script>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src='https://maps.googleapis.com/maps/api/js?key=AIzaSyBDhzKQV1BgtvQdvhFwbAjUxUKp4iPL9Is'></script>
     <style>
         .top-bar {
             display: flex;
@@ -84,8 +84,8 @@
                 color: var(--error-red) !important;
             }
         /* ============================================================
-   CUSTOMER MODAL - COMPLETE CSS
-   ============================================================ */
+        CUSTOMER MODAL - COMPLETE CSS
+        ============================================================ */
 
         /* Modal Size */
         .modal-xl {
@@ -320,6 +320,41 @@
         .input-group-custom > .labelup {
             z-index: 1;
         }
+        /*Status Badge */
+        .dg-status-badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: 13px; /* medium text size */
+            padding: 3px 8px; /* slightly more breathing room */
+            border-radius: 12px; /* pill shape */
+            line-height: 1.4; /* keeps row height consistent */
+            white-space: nowrap; /* prevents wrapping in table cells */
+        }
+
+        .dg-status-circle {
+            width: 9px; /* medium circle */
+            height: 9px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .dg-status-active {
+            background-color: #eaf9ea;
+            color: #2e7d32;
+        }
+
+            .dg-status-active .dg-status-circle {
+                background-color: #2e7d32;
+            }
+
+        .dg-status-inactive {
+            background-color: #fdeaea;
+            color: #c62828;
+        }
+
+            .dg-status-inactive .dg-status-circle {
+                background-color: #c62828;
+            }
     </style>
 
 </head>
@@ -328,7 +363,7 @@
     <div class="Main-Container">
         <div class="grid-container">
             <!-- Top Bar -->
-            <div class="top-bar">
+            @*<div class="top-bar">
                 <div class="top-bar-left">
                     <div class="breadcrumb-row">
                         <span class="breadcrumb-home">🏠 Home</span>
@@ -341,7 +376,7 @@
                     <button class="btn-print">🖨️ Print</button>
                     <button class="btn-add" id="btnAddCustomer">+ Add</button>
                 </div>
-            </div>
+            </div>*@
 
             <div class="Table-Container">
                 <div id="grid-Customer-Detail-lists"></div>
@@ -475,7 +510,9 @@
                             <!-- Geo -->
                             <div class="input-group-custom d-flex align-items-center">
                                 <input type="text" id="txtGeo" class="form-control-custom" placeholder="Geo Location" readonly>
-                                <button type="button" class="btn btn-sm btn-primary ms-2" onclick="getGeo()">📍</button>
+                                <button type="button" id="btnLocation" class="btn btn-sm btn-primary ms-2" onclick="getGeo()"><span id="spMapMark" class="fa fa-map-marker"
+
+style="font-size:16px"></span><span  id="spMapNavigate" class="fa fa-location-arrow" style="font-size:16px"></span></button>
                                 <label class="labelup">Geo Location</label>
                             </div>
                             <div id="err_GeoLocation" class="error-msg">Geo Location is required</div>
@@ -519,7 +556,7 @@
         const Aurl = '@Session["APIurl"]';
 
 
-
+        var TransMode = 1;
         const addModal = new bootstrap.Modal(document.getElementById('addCustomerModal'));
 
         $('#btnAddCustomer').click(function () {
@@ -555,6 +592,9 @@
                 title: 'Edit',
                 displayType: 'single_icon',
                 handler: function (row) {
+                    TransMode = 2;
+                    $("#spMapNavigate").hide();
+                    $("#spMapMark").show();                    
                     openEditModal(row);
                 }
             },
@@ -563,6 +603,10 @@
                 title: 'View',
                 displayType: 'single_icon',
                 handler: function (row) {
+                    TransMode = 3;
+                    //$("#btnLocation").text("🗺️");
+                     $("#spMapNavigate").show();
+ $("#spMapMark").hide();
                     openViewModal(row);
                 }
             }
@@ -584,556 +628,6 @@
 
         GetColumnSettingsData(2, 3, 1);
 
-    //var CustomerColumns1 = [
-    //    {
-    //        "field": "ID",
-    //        "header": "ID",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "ID"
-    //    },
-    //    {
-    //        "field": "Customercode",
-    //        "header": "Customercode",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "Customercode"
-    //    },
-    //    {
-    //        "field": "Customername",
-    //        "header": "Customername",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "Customername"
-    //    },
-    //    {
-    //        "field": "Address",
-    //        "header": "Address",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "Address"
-    //    },
-    //    {
-    //        "field": "Latitude",
-    //        "header": "Latitude",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "Latitude"
-    //    },
-    //    {
-    //        "field": "Longitude",
-    //        "header": "Longitude",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "Longitude"
-    //    },
-    //    {
-    //        "field": "GSTIN",
-    //        "header": "GSTIN",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "GSTIN"
-    //    },
-    //    {
-    //        "field": "RegisteredDate",
-    //        "header": "RegisteredDate",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "RegisteredDate"
-    //    },
-    //    {
-    //        "field": "ExpDate",
-    //        "header": "ExpDate",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "ExpDate"
-    //    },
-    //    {
-    //        "field": "AmcDate",
-    //        "header": "AmcDate",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "AmcDate"
-    //    },
-    //    {
-    //        "field": "ShineType",
-    //        "header": "ShineType",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": false,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "ShineType"
-    //    },
-    //    {
-    //        "field": "Usertype",
-    //        "header": "Usertype",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": false,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "Usertype"
-    //    },
-    //    {
-    //        "field": "NoofClient",
-    //        "header": "NoofClient",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "NoofClient"
-    //    },
-    //    {
-    //        "field": "MobileApp",
-    //        "header": "MobileApp",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "MobileApp"
-    //    },
-    //    {
-    //        "field": "ParentCompCode",
-    //        "header": "ParentCompCode",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "ParentCompCode"
-    //    },
-    //    {
-    //        "field": "Version",
-    //        "header": "Version",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "Version"
-    //    },
-    //    {
-    //        "field": "Active",
-    //        "header": "Active",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "Active"
-    //    },
-    //    {
-    //        "field": "CBy",
-    //        "header": "CBy",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "CBy"
-    //    },
-    //    {
-    //        "field": "CDate",
-    //        "header": "CDate",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "CDate"
-    //    },
-    //    {
-    //        "field": "MBy",
-    //        "header": "MBy",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "MBy"
-    //    },
-    //    {
-    //        "field": "MDate",
-    //        "header": "MDate",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "MDate"
-    //    },
-    //    {
-    //        "field": "ShineTypeValue",
-    //        "header": "ShineTypeValue",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "ShineTypeValue"
-    //    },
-    //    {
-    //        "field": "UsertypeValue",
-    //        "header": "UsertypeValue",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "UsertypeValue"
-    //    },
-    //    {
-    //        "field": "ActionUser",
-    //        "header": "ActionUser",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "ActionUser"
-    //    },
-    //    {
-    //        "field": "ActionTime",
-    //        "header": "ActionTime",
-    //        "type": "label",
-    //        "width": 200,
-    //        "align": "left",
-    //        "visible": true,
-    //        "EnableColumnMenu": true,
-    //        "ShowinColumnOption": true,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 200,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "NaActionTimeme"
-    //    },
-    //    {
-    //        "field": "ID",
-    //        "header": "Action",
-    //        "type": "action3dots",
-    //        "width": 80,
-    //        "align": "center",
-    //        "visible": true,
-    //        "EnableColumnMenu": false,
-    //        "ShowinColumnOption": false,
-    //        "Total": false,
-    //        "TotalYN": "0",
-    //        "EnableSum": false,
-    //        "EnableAvg": false,
-    //        "EnableCount": false,
-    //        "EnableUnique": false,
-    //        "precision": "2",
-    //        "ClickPopup": false,
-    //        "Printwidth": 80,
-    //        "PrintYN": false,
-    //        "PrintColumnName": "Action"
-    //    },
-    //];
-
-    //$(document).ready(function () {
         loadDashboardGrid();
         loadParentCompOptions();
     //});
@@ -1141,15 +635,14 @@
     function loadDashboardGrid() {
         const Aurl = '@Session["APIurl"]';
     console.log("AURL Value: ",Aurl)
-    const userId = sessionStorage.getItem("userID");
-
-        $.get(Aurl + "customer/GetCustomerList", { userId: userId }, function (rowData) {
+   
+        $.get(Aurl + "customer/GetCustomerList", { userId: 0 }, function (rowData) {            
             console.log("Row Data:", rowData);
         //console.log("Row Data for " + apiEndpoint, rowData);
             new GKBSDynamicGrid('#grid-Customer-Detail-lists', CustomerColumns, rowData, {
             enablePagination: true,
             pageSize: 10,
-            height: "200px",
+            height: "400px",
             enableSearch: true,
             stickyToWindow: true,
             enableExport: false,
@@ -1160,13 +653,45 @@
             enableSorting: true,
             searchTerm: "",
             CompanyName: "GKBS Support",
-                ReportName: "Customer",
+                ReportName: "Customers",
+                customButtons: [
+                    {
+                        icon: '➕',
+                        text: 'Add New',
+                        title: 'ADD',
+                        onClick: function () {
+                            TransMode = 1;
+                            $("#spMapNavigate").hide();
+$("#spMapMark").show();      
+                            document.getElementById('hdnCustomerID').value = "0";
+                            const chkActive = document.getElementById('chkActive');
+                            chkActive.checked = true;
+                            chkActive.disabled = true;
+                            addModal.show();
+                        }
+                    }
+                ],
                 singleIconAction: singleIconAction, // Pass the single View action
                 rowActionsMenu: menuActions,   
-            rowActionsMenu: actions,
+                rowActionsMenu: actions,
+                customCellRenderer: (el, col, rowData) => {
+                    if (col.field === 'Active') {
+                        const val = rowData[col.field];
+                        console.log("Active : ", val);
+                        if (val === 'True') {
+                            el.innerHTML = `<div class="dg-status-badge dg-status-active">
+                      <span class="dg-status-circle"></span> Active
+                  </div>`;
+                        } else if (val === 'False') {
+                            el.innerHTML = `<div class="dg-status-badge dg-status-inactive">
+                      <span class="dg-status-circle"></span> In-Active
+                  </div>`;
+                        }
+                    }
+                },
         });
     }).fail(function(xhr) {
-        console.showErrorSnackbar("Row Data FAILED for " + apiEndpoint, xhr.status, xhr.responseText);
+        console.error("Row Data FAILED", xhr.status, xhr.responseText);
     });
         }
 
@@ -1291,8 +816,9 @@
             return true;
         }
 
-
+        
         function getGeo() {
+            if(TransMode != 3){
             if (!navigator.geolocation) {
                 alert('Geolocation not supported by your browser');
                 return;
@@ -1308,6 +834,17 @@
                     alert('Could not get location. Please allow location access.');
                 }
             );
+            }
+            else{
+                var latlong = $("#txtGeo").val();
+                if(latlong){
+                    const url = `https://www.google.com/maps/dir/?api=1&destination=${latlong}`;
+  window.open(url, '_blank'); // or window.location.href
+                    //window.open("https://g","_black");
+                }else{
+                    showErrorSnackbar("Location not found");
+                }
+            }
         }
 
         function loadParentCompOptions() {
@@ -1344,7 +881,7 @@
 
             if (!validateAll()) return;
 
-            const userId = sessionStorage.getItem("userID");
+            const userId = '@Session["LoginUserID"]';
 
             const geoVal = document.getElementById('txtGeo').value.trim();
             let lat = "", lng = "";
@@ -1383,7 +920,7 @@
                 MobileApp: document.getElementById('txtMobileApp').value.trim(),
                 ParentCompCode: document.getElementById('txtParentComp').value,
                 Latitude: lat,
-                Longitude: lng,
+                Longtitude: lng,
                 Address: document.getElementById('txtAddress').value.trim(),
                 Active: activeVal,
                 UID: userId,
@@ -1436,8 +973,8 @@
             document.getElementById('txtAddress').value = row.Address || '';
 
             // 3. Set Geo
-            if (row.Latitude && row.Longitude) {
-                document.getElementById('txtGeo').value = row.Latitude + ', ' + row.Longitude;
+            if (row.Latitude && row.Longtitude) {
+                document.getElementById('txtGeo').value = row.Latitude + ', ' + row.Longtitude;
             }
 
             // 4. Set ShineType radio (1 = FA, 0 = Non FA)
@@ -1483,8 +1020,8 @@
             document.getElementById('txtParentComp').value = row.ParentCompCode || '';
             document.getElementById('txtAddress').value = row.Address || '';
 
-            if (row.Latitude && row.Longitude) {
-                document.getElementById('txtGeo').value = row.Latitude + ', ' + row.Longitude;
+            if (row.Latitude && row.Longtitude) {
+                document.getElementById('txtGeo').value = row.Latitude + ', ' + row.Longtitude;
             }
 
             document.querySelectorAll('input[name="shineType"]').forEach(r => r.checked = false);

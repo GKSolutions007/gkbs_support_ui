@@ -1,0 +1,717 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutReports.cshtml";
+}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="~/Content/5.3.8/bootstrap.min.css" rel="stylesheet" />
+<link href="~/GKBS_GRID_2.0/css/gridui.css" rel="stylesheet" />
+<script src="~/Scripts/5.3.8/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="~/Content/Snackbar.css" rel="stylesheet" />
+<script src="~/Scripts/Validation.js"></script>
+<script src="~/GKBS_GRID_2.0/js/gridui.js"></script>
+<style>
+    .menu-name {
+        font-size:16px;
+    }
+    ul li > .menu-name:hover {
+        font-weight: bold;
+        color: white;
+    }
+    /* Snackbar container */
+    .RepLoadersnackbar {
+        visibility: hidden; /* hidden by default */
+        min-width: 250px;
+        background-color: #333;
+        color: #fff;
+        text-align: left;
+        border-radius: 8px;
+        padding: 12px 20px;
+        position: fixed;
+        top: 50px; /* ⬅️ instead of bottom */
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+    }
+
+        /* Show animation */
+        .RepLoadersnackbar.show {
+            visibility: visible;
+            animation: slideDown 0.3s, fadeout 0.3s 3s;
+        }
+
+    /* Slide from top */
+    @@keyframes slideDown {
+        from {
+            top: 0;
+            opacity: 0;
+        }
+
+        to {
+            top: 20px;
+            opacity: 1;
+        }
+    }
+
+    @@keyframes fadeout {
+        from {
+            top: 20px;
+            opacity: 1;
+        }
+
+        to {
+            top: 0;
+            opacity: 0;
+        }
+    }
+
+    /* Spinner */
+    .Reploader {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #4caf50;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    ul li > .menu-name:hover {
+        font-weight: bold;
+        color: var(--report-menu-hover);
+    }
+</style>
+<body>
+    <div id="RepLoadersnackbar" class="RepLoadersnackbar">
+        <table>
+            <tr>
+                <td>
+                    <div class="Reploader"></div>
+                </td>
+                <td style="padding-left:10px;font-size:16px;">
+                    <span>Loading... Please wait</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="toastBox"></div>
+    <h4 hidden id="MainHeading">@ViewData["FormName"]</h4>
+    <div>
+        <div class="right-section">
+            <div id="Grid" style="width: 100%;"></div>
+            <div id="DetailGrid" style="width: 100%;"></div>
+        </div>
+    </div>
+</body>
+<script>
+            var UID = '@Session["LoginUserID"]';
+    var Aurl = '@Session["APIurl"]';
+    var SelectTableID = 1;
+    var Frames = 1, ItemsperPage = 10, CompanyName = "GKBS";
+    var arrReportDeatils = [], IsDynamicReport = 0, nSendFilterstoDetail = 0;
+    var arrAllFooterData = [];
+    getAllReports();
+    function getAllReports() {
+        $.ajax({
+            url: Aurl + "Reportpermissions",
+            type: 'get',
+            contentType: 'json',
+            data: { UID: UID },
+            async: false,
+            success: function (data) {
+                var repdata = JSON.parse(data);
+                console.log(repdata);
+                var ParentMenus = repdata.ParentRepMenu;
+                var ChildMenus = repdata.UserRepMenus;
+                //$.each(ParentMenus, function (i, items) {
+                //    var childs = ChildMenus.filter(ch => ch.ParentId == items.ReportID)
+                //    console.log("childs ", childs);
+                //});
+                // Build final JSON with hierarchy
+                var finalData = ParentMenus.map(parent => {
+                    // Attach children under each parent
+                    var childs = ChildMenus.filter(ch => ch.ParentId == parent.ReportID);
+                    return {
+                        ReportID: parent.ReportID,
+                        MenuName: parent.MenuName,
+                        // any other parent properties you want to keep
+                        ...parent,
+                        Children: childs
+                    };
+                });
+                console.log("Hierarchical JSON:", finalData);
+                document.getElementById('menuContainer').appendChild(createMenu(finalData));
+
+            }
+        });
+    }
+    function getMenuIcon(name, hasChildren) {
+        if (!name) return hasChildren ? 'fa-folder' : 'fa-file-lines';
+
+        const lowerName = name.toLowerCase();
+        if (lowerName == "transaction report") return 'fa-shopping-bag';
+        if (lowerName == "master reports") return 'fas fa-database';
+        if (lowerName == "favourite") return 'fa-regular fa-star';
+
+    }
+    function createMenu(data) {
+        const ul = document.createElement('ul');
+        data.forEach(item => {
+            const li = document.createElement('li');
+            li.dataset.reportId = item.ReportID || "";
+            li.dataset.menuName = item.ReportName;
+
+            const hasChildren = item.Children && item.Children.length > 0;
+
+            // Toggle symbol
+            const toggle = document.createElement('span');
+            toggle.classList.add('toggle');
+            toggle.textContent = hasChildren ? '+' : '•';
+            li.appendChild(toggle);
+
+            // 🔹 Add Icon
+            const icon = document.createElement('i');
+            icon.className = 'fa-solid ' + getMenuIcon(item.ReportName, hasChildren);
+            icon.style.marginRight = hasChildren ? '8px' : '4px';
+            icon.style.width = hasChildren ? '16px' : '0px';
+            icon.style.textAlign = 'center';
+            icon.style.color = '#555';
+            li.appendChild(icon);
+
+            // Menu text
+            const name = document.createElement('span');
+            name.textContent = item.ReportName;
+            name.classList.add('menu-name');
+            li.appendChild(name);
+
+            if (hasChildren) {
+                const childUl = createMenu(item.Children);
+                childUl.classList.add('collapsed');
+                li.appendChild(childUl);
+
+                li.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const isCollapsed = childUl.classList.contains('collapsed');
+
+                    const siblings = li.parentElement.querySelectorAll(':scope > li > ul');
+                    const siblingToggles = li.parentElement.querySelectorAll(':scope > li > .toggle');
+                    const siblingIcons = li.parentElement.querySelectorAll(':scope > li > i');
+
+                    siblings.forEach(s => s.classList.add('collapsed'));
+                    siblingToggles.forEach(t => t.textContent = '+');
+                    // Reset icons of siblings to closed folder if they have children
+                    siblingIcons.forEach((ic, idx) => {
+                        const sibLi = li.parentElement.querySelectorAll(':scope > li')[idx];
+                        const sibHasChildren = sibLi.querySelector('ul') !== null;
+                        if (sibHasChildren) {
+                            ic.className = 'fa-solid ' + getMenuIcon(sibLi.dataset.menuName, true);
+                        }
+                    });
+
+                    if (isCollapsed) {
+                        childUl.classList.remove('collapsed');
+                        toggle.textContent = '−';
+                        // Update this icon to open folder or specific active icon
+                        icon.className = 'fa-solid ' + getMenuIcon(item.ReportName, true);
+                        icon.style.color = '#007acc';
+                    } else {
+                        toggle.textContent = '+';
+                        icon.style.color = '#555';
+                    }
+                });
+            } else {
+                li.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    console.log(li.dataset);
+                    $("#Grid").html("");
+                    $("#DetailGrid").html("");
+                    FID = li.dataset.reportId;
+                    GetData(0);
+                    GetData(1);
+                    //ColumnDetails(2, FID, 1);
+                    GetColumnSettingsData(2, FID, 1);
+                    $("#MainHeading,#RepMainHeading").html(li.dataset.menuName);
+                    $("#txtFormName").val(li.dataset.menuName);
+                    if (FID != 0) {
+                        $("#btnFilters,#btnGenerate,#btnExport,#dvAssign").show();
+                        openTabs(null, 'FilterDetails', 1);
+                    }
+
+                    // Highlight active leaf
+                    li.parentElement.querySelectorAll('li').forEach(l => l.style.backgroundColor = 'transparent');
+                    li.style.backgroundColor = '#eef';
+                });
+            }
+
+            ul.appendChild(li);
+        });
+        return ul;
+    }
+
+    function GetData(nMode) {
+        if (FID != 0) {
+            $.ajax({
+                url: Aurl + "reportparameters/get",
+                type: 'get',
+                contentType: 'json',
+                data: { Mode: nMode, ReportID: FID },               
+                async: false,
+                success: function (data) {
+                    if (nMode == 0) {
+                        arrReportDeatils = eval(data);
+                        Frames = arrReportDeatils[0].Frames;
+                        IsDynamicReport = arrReportDeatils[0].IsDynamicReport;
+                        nSendFilterstoDetail = arrReportDeatils[0].SendFiltersDetail;
+                        if (Frames == 2) {
+                            //ColumnDetails(2, FID, 2);
+                            GetColumnSettingsData(2, FID, 2);
+                        }
+                    }
+                    if (nMode == 1) {
+                        Table.draw().clear(); Table.draw().clear();
+                        if (data.length > 0) {
+                            $.each(data, function (i, items) {
+                                var ParamType = items.ParameterType;
+                                var ParVal = "";
+                                var IsMand = items.IsMandatory;
+                                var defval = items.AutolistName == "1" ? "checked" : "";
+                                var isoddoreven = i % 2 == 0 ? "odd" : "even";
+                                if (ParamType == "Autolist") {
+                                    ParVal = '<input isMandatory =' + IsMand + ' type="text" class="form-control" name=' + items.AutolistName + ' id=' + (items.AutolistName + i) + ' />';
+                                }
+                                else if (ParamType == "Dropdown") {
+                                    ParVal = '<select class="form-control" name=' + items.AutolistName + ' id=Combo' + (i) + '></select>'
+                                }
+                                else if (ParamType == "Date") {
+                                    ParVal = '<input isMandatory =' + IsMand + ' type="date" class="form-control" name=' + items.AutolistName + ' id="dtp' + (items.AutolistName + i) + '" />';
+                                    var Datetype = items.AutolistName == "CD" ? 0 : items.AutolistName == "MF" ? 8 : 0;
+                                    setDate("dtp" + (items.AutolistName + i), Datetype);
+                                }
+                                else if (ParamType == "Checkbox") {
+                                    ParVal = '<input type="checkbox" name=' + items.AutolistName + ' id=chk' + (items.AutolistName + i) + ' ' + defval + ' />';
+                                }
+                                else if (ParamType == "Number") {
+                                    ParVal = '<input isMandatory =' + IsMand + ' type="number" class="form-control" name=' + items.AutolistName + ' id=chk' + (items.AutolistName + i) + ' value =' + items.AutolistName + ' />';
+                                }
+                                else if (ParamType == "Text") {
+                                    ParVal = '<input isMandatory =' + IsMand + ' type="text" class="form-control" name="text' + items.AutolistName + '" id="txt' + (items.AutolistName + i) + '" value ="' + items.AutolistName + '" />';
+                                }
+                                Table.row.add([
+                                    '<label id="lblparamName' + i + '"><b>' + items.ParameterName + '</b></label>',
+                                    ParVal
+                                ]).draw(false);
+                            });
+                            LoadDataforAL();
+                        }
+                        else {
+                            //showErrorSnackbar("No Records Found");
+                        }
+                    }
+                }
+            });
+        }
+    }
+    function GetColumnSettingsData(nMode, nFormID, nTableID) {
+        $.ajax({
+            url: Aurl + "columnsettings/getcolumnsettings",
+            type: 'get',
+            contentType: 'json',
+            data: { Mode: nMode, FormID: nFormID, TableID: nTableID, FormorReport: 1 },            
+            async: false,
+            success: function (data) {
+                if (data.length > 0) {
+                    columnsettings = (data);
+                    console.log("columns : ", columnsettings);
+                    if (nTableID == 1) {
+                        columnsettings = (data);
+                        console.log("Header Columns : ", columnsettings);
+                        if (columnsettings.length) {
+                            arrParamHiddenColumns = columnsettings.filter(hd => hd.ShowinColumnOption == false);
+                            console.log("Hidden param : ", arrParamHiddenColumns);
+                        }
+                    } else if (nTableID == 2) {
+                        detailcolumnsettings = data;
+                        console.log("Detail Columns : ", detailcolumnsettings);
+                    }
+                } else {
+                    showErrorSnackbar("No column data found");
+                }
+            }
+        });
+    }
+    function setDate(FieldID,Type) {
+    $.ajax({
+         url: "@Url.Action("setdate", "Home")",
+        type: 'get',
+        contentType: 'json',
+        data: { TypeID: Type },
+        success: function (data) {
+            $.each(data, function (i, items) {
+                $("#" + FieldID).attr("max", items.MaxDate);
+                $("#" + FieldID).attr("min", items.MinDate);
+                $("#" + FieldID).val(items.Value);
+            });
+        }
+    })
+    }
+    $("#btnClear").click(function () {
+        $('#tblFilterData tr td input[type=text],select').each(function (i, items) {
+            if (items.tagName == "INPUT") {
+                $(this).val("");
+            }
+            if (items.tagName == "SELECT") {
+                $(this).val(0);
+            }
+            if (items.tagName == "Checkbox") {
+                $(this).prop("checked", false);
+            }
+        });
+    });
+    function LoadDataforAL() {
+        $('#tblFilterData tr td input[type=text],select').each(function (i, items) {
+            //ShowMsgPopup(items.value + i);
+            //isGridEmpty++;
+            var strALName = items.name;
+            var id = items.id
+            var arrData = [];
+            $.ajax({
+                url: Aurl + "reportparameters/get",
+                type: 'get',
+                contentType: 'json',
+                data: { Mode: 2, ReportID: FID, ALName: strALName },                
+                success: function (data) {
+                    if (data.length > 0) {
+                        //Table.draw().clear();
+                        console.log("Field AL : ", strALName, " Field ID : ", id, " tagName : ", items.tagName);
+                        if (items.tagName == "INPUT") {
+                            $.each(data, function (i, items) {
+                                //arrData[i] = items.Name
+                                var al = {
+                                    "label": items.Name,
+                                    "id": items.ID,
+                                }
+                                arrData.push(al);
+                            });
+                            //var txtName = $('#' + id + '');
+                            //autocomplete = txtName.typeahead({ scrollBar: true, onSelect: displayResult });
+                            //autocomplete.data('typeahead').source = null;
+                            //autocomplete.data('typeahead').source = arrData;
+                            console.log("arrData ", arrData);
+                            $('#' + id + '').autocomplete({
+                                minLength: 0,
+                                source: arrData,
+                                select: function (event, ui) {
+                                    $('#' + id + '').val(ui.item.label);
+                                    //$("#txtRemarks").val(ui.item.id);
+                                    return false;
+                                },
+                            }).autocomplete("instance")._renderItem = function (ul, item) {
+                                return $("<li class='each'>")
+                                    .append("<div class='acItem'><span class='name'>" +
+                                        item.label + "</span></div>")
+                                    .appendTo(ul);
+                            };
+                        }
+                        else if (items.tagName == "SELECT") {
+                            $.each(data, function (i, items) {
+                                $('#' + id + '').append($('<option/>', {
+                                    value: items.ID,
+                                    text: items.Name,
+                                }));
+                            });
+                        }
+                    }
+                }
+            });
+        });
+    }
+    function CheckMandatory() {
+        var IsValid = true;
+        $('#tblFilterData tr td input').each(function (i, items) {
+            var FieldType = this.type;
+            var FieldID = this.id;
+            var FieldValue = this.value;
+
+            $(this).css("border-color", "");
+            if (FieldType == "text" || FieldType == "number" || FieldType == "date") {
+                var IsMand = document.getElementById(this.id).getAttribute('ismandatory');
+                if (IsMand == 1 && FieldValue == "") {
+                    $(this).css("border-color", "red");
+                    IsValid = false;
+                    showErrorSnackbar("Mandatory fields should not empty");
+                }
+            }
+            //console.log("Input Fields", this, "Type : ", this.type, "ID : ", this.id, "IsMand : ", );
+        });
+        return IsValid;
+    }
+    var arrParams = [], ParamIndex = 1;
+
+    //$('#btnPopupGenerate,#btnGenerate').click(function (e) {
+    $('#btnPopupGenerate,#btnGenerate').on("click",function (e) {
+        if (CheckMandatory()) {
+            arrParams = [], ParamIndex = 1;
+            $('#tblFilterData tr td').each(function (i, items) {
+                if (i % 2 == 1) {
+                    console.log("Field Type : ", items.firstChild);
+                    var input = items.firstChild.id;
+                    var inputtype = items.firstChild.type;
+                    var s = inputtype == "checkbox" ? $("#" + input).is(":checked") : $("#" + input).val();
+                    if (s == null) {
+                        //alert("No Value");
+                    }
+                    else {
+                        //alert("Values " + s);
+                        var strpv = "Param" + ParamIndex;
+                        var PV = {
+                            "Param1": s
+                        }
+                        arrParams.push(PV);
+                        ParamIndex++;
+                    }
+                }
+            });
+            GenerateData();
+        }
+    });
+    function GenerateData() {
+        $("#Grid").html("");
+        $("#DetailGrid").html("");
+        toggleSidebar();
+        var listParams = {
+            "ReportID": FID,
+            "ProcedureName": arrReportDeatils[0].ProcedureName,
+            "lstvFilters": arrParams
+        };
+        var Excelfilter = [];
+        var Col2Data = "";
+        $('#tblFilterData tr td').each(function (i, items) {
+            var insert = false;
+            if (i % 2 == 0) {
+                var lbl = items.firstChild.id;
+                Col1Data = $("#" + lbl).text();
+                //console.log("Col 1", Col2Data);
+                insert = false;
+            }
+            else if (i % 2 == 1) {
+                var input = items.firstChild.id;
+                var inputtype = items.firstChild.type;
+                var ifselval = inputtype == "select-one" && $("#" + input).val() > 0 ? $("#" + input + " option:selected").text() : "";
+                Col2Data = inputtype == "checkbox" ? $("#" + input).is(":checked") ? 1 : 0 : inputtype == "select-one" ? ifselval : $("#" + input).val();
+                insert = true;
+            }
+            if (insert) {
+                var lst = {
+                    FilterName: Col1Data,
+                    Value: Col2Data
+                };
+                Excelfilter.push(lst);
+            }
+        });
+        let sb = document.getElementById("RepLoadersnackbar");
+        sb.classList.add("show");
+        $.ajax({
+            url: Aurl + "reportgenerate/get",
+            type: 'post',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(listParams),            
+            success: function (data) {
+                sb.classList.remove("show");
+                if (data.length > 0) {
+                    if (IsDynamicReport == 1) {//FID == 14
+                        bindDataTableforDynamicReport(eval(data), Excelfilter);
+                    }
+                    else {
+                        bindDataTable(eval(data), Excelfilter);
+                    }
+                }
+                else {
+                    showErrorSnackbar("No data found");
+                }
+            },
+            error: function (errr) {
+                sb.classList.remove("show"); showErrorSnackbar("Error in data retrieval");
+            }
+        });
+    }
+    function bindDataTable(data, filterdata) {
+        if (data.length === 0) {
+            return; // No data to display
+        }
+        var Reporthd = $("#MainHeading").text();
+        var nHeight = Frames == 1 ? "400px" : "300px";
+        console.log("columnsettings ", columnsettings);
+        var currentSearchValue = '';
+        //if (grid) {
+        //    currentSearchValue = grid ? grid.state.searchTerm : '';
+        //}
+        grid = new GKBSDynamicGrid('#Grid', columnsettings, data, {
+            enablePagination: true,
+            pageSize: ItemsperPage,
+            height: nHeight,
+            enableSearch: true,
+            stickyToWindow: true,
+            enableExport: false,
+            enablePrint: false,
+            enableColumnsBtn: true,
+            enableAddRow: false,
+            enableRemoveRow: false,
+            enableSorting: true,
+            searchTerm: currentSearchValue,
+            CompanyName: CompanyName,
+            ReportName: Reporthd,
+            fitersdata: filterdata,
+            singleIconAction: [],
+            rowActionsMenu: [],
+            //onCellChange: handleCellUpdate,
+            customButtons: [
+                {
+                    icon: '🛠️',
+                    text: 'Settings',
+                    title: 'Settings',
+                    onClick: (gridInstance, event) => {
+                        //console.log("gridInstance : ", gridInstance);
+                        //console.log("event : ", event);
+                        //alert('Settings clicked! Total rows: ' + gridInstance.originalData.length);
+                        SelectTableID = 1;
+                        modalReportColumnsetting.style.display = "block";
+                        ColumnSettings(1, FID, SelectTableID);
+                    }
+                },
+                {
+                    icon: '📥',
+                    text: 'Export',
+                    title: 'Export to Excel via Custom Button',
+                    onClick: (gridInstance, event) => {
+                        console.log("Custom Export clicked");
+                        // Show the export options modal
+                        showExportOptionsModal(gridInstance);
+                        //rdoHeaderFooterSaperate,rdoHeaderFooterCombined
+                        $("#rdoFooteronly,#rdoHeaderandFooter,#rdoHeaderFooterSaperate,#rdoHeaderFooterCombined").hide();
+                        if (Frames == 1) {
+                            //$("#rdoFooteronly,#rdoHeaderandFooter").prop("disabled", true);
+                            $("#rdoHeaderonly").show();
+                        }
+                        else {
+                            $("#rdoHeaderonly,#rdoFooteronly,#rdoHeaderandFooter,#rdoHeaderFooterSaperate,#rdoHeaderFooterCombined").show();
+                        }
+                    }
+                },
+                {
+                    icon: '🖨️',
+                    text: 'Print',
+                    title: 'Print Grid Data',
+                    visible: true,
+                    onClick: (gridInstance, event) => {
+                        console.log("Print clicked");
+                        // Show the print options modal
+                        showPrintOptionsModal(gridInstance);
+                        $("#rdoPrintFooteronly,#rdoPrintHeaderonly,#rdoPrintHeaderFooterCombined").hide();
+                        if (Frames == 1) {
+                            //$("#rdoFooteronly,#rdoHeaderandFooter").prop("disabled", true);
+                            $("#rdoPrintHeaderonly").show();
+                        }
+                        else {
+                            $("#rdoPrintFooteronly,#rdoPrintHeaderonly,#rdoPrintHeaderFooterCombined").show();
+                        }
+                    }
+                },
+            ],
+            onCellClick: (rowData, fieldName, cellValue, column) => {
+                if (Frames == 2) {
+                    arrParams = []
+                    //var rowData = args.rowData;
+                    //Hidden column set to parameters
+                    for (var i = 0; i < arrParamHiddenColumns.length; i++) {
+                        var values = arrParamHiddenColumns[i].field;
+                        var PV = {
+                            "Param1": rowData[values]
+                        }
+                        arrParams.push(PV);
+                    }
+                    if (nSendFilterstoDetail == 1) {
+                        //Filters set to parameters
+                        $('#tblFilterData tr td').each(function (i, items) {
+                            if (i % 2 == 1) {
+                                var input = items.firstChild.id;
+                                var inputtype = items.firstChild.type;
+                                var s = inputtype == "checkbox" ? $("#" + input).is(":checked") : $("#" + input).val();
+                                if (s == null) {
+                                    //alert("No Value");
+                                }
+                                else {
+                                    //alert("Values " + s);
+                                    var strpv = "Param" + ParamIndex;
+                                    var PV = {
+                                        "Param1": s
+                                    }
+                                    arrParams.push(PV);
+                                    ParamIndex++;
+                                }
+                            }
+                        });
+                    }
+
+                    console.log("Params ", arrParams);
+                    var DetailProc = arrReportDeatils[0].DetailProcedureName
+                    $("#DetailGrid").html("");
+                    var listParams = {
+                        "ReportID": FID,
+                        "ProcedureName": DetailProc,
+                        "lstvFilters": arrParams
+                    };
+                    $.ajax({
+                        url: Aurl + "reportgenerate/get",
+                        type: 'post',
+                        contentType: 'application/json; charset=utf-8',
+                        data: JSON.stringify(listParams),                       
+                        async: false,
+                        success: function (data) {
+                            if (data.length > 0) {
+                                bindDetailDataTable(eval(data), eval(listParams));
+                            }
+                            else {
+                                showErrorSnackbar("No data found");
+                            }
+                        }
+                    });
+                }
+            },
+            customCellRenderer: (el, col, rowData) => {
+
+            },
+            onCellDoubleClick: (rowData, fieldName, cellValue, column) => {
+                // Double-click handler - shows JSON format
+                let message = `Double-Clicked Cell:\n`;
+                message += `• Field: ${fieldName}\n`;
+                message += `• Value: ${cellValue}\n\n`;
+                message += `Full Row Data:\n${JSON.stringify(rowData, null, 2)}`;
+                //alert(message);
+                navigator.clipboard.writeText(cellValue);
+
+                showSuccessSnackbar("Value Copied.");
+            },
+            onColumnResize: (colIndex, field, header, newWidth) => {
+                //alert(`Column Resized via Callback:\nIndex: ${colIndex}\nName: ${header}\nNew Width: ${newWidth}`);
+                UpdateColumnWidth(FID, 1, 1, colIndex, field, newWidth);
+            },
+        });
+    }
+
+</script>

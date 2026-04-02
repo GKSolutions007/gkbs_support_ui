@@ -178,6 +178,9 @@
     <Content Include="GKBS_GRID_2.0\js\gridui.js" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <Content Include="Images\logo\G_100x80.png" />
+    <Content Include="Images\logo\G_large--WOWM.png" />
+    <Content Include="Images\logo\G_large_Transparent.png" />
     <Content Include="js\common-utils.js" />
     <Content Include="Scripts\5.3.8\bootstrap.bundle.js" />
     <Content Include="Scripts\5.3.8\bootstrap.bundle.min.js" />

@@ -574,7 +574,7 @@
 
     function loadDashboardGrid(reportId, tableId, selector, apiEndpoint, headings, columns) {
 
-    const userId = sessionStorage.getItem("userID");
+    const userId = '@Session["LoginUserID"]';
 
         $.get(Aurl + "users/GetUserList", function (rowData) {
             console.log("Row Data:", rowData);
@@ -636,7 +636,7 @@
         function save() {
             if (!validateAll()) return;
 
-            const userId = sessionStorage.getItem("userID");
+            const userId = '@Session["LoginUserID"]';
             const ID = document.getElementById('hdnCustomerID').value;
 
             const payload = {

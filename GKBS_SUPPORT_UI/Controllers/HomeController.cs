@@ -12,8 +12,6 @@ namespace GKBS_SUPPORT_UI.Controllers
 {
     public class HomeController : Controller
     {
-
-
         public ActionResult Index()
         {
             if (Session["LoginUserID"] == null)

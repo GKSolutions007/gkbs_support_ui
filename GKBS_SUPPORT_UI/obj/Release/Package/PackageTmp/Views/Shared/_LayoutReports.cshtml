@@ -8,12 +8,15 @@
     <title>@ViewBag.Title - GKBS</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="~/Content/5.3.8/bootstrap.min.css" rel="stylesheet" />
-    <link href="~/GKBS_GRID_2.0/css/gridui.css" rel="stylesheet" />
+    <link href="~/GKBS_Grid/css/gridui.css" rel="stylesheet" />
+    <link href="~/Content/dataTables.bootstrap.min.css" rel="stylesheet" />
     <script src="~/Scripts/5.3.8/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="~/Content/Snackbar.css" rel="stylesheet" />
     <script src="~/Scripts/Validation.js"></script>
-    <script src="~/GKBS_GRID_2.0/js/gridui.js"></script>
+    <script src="~/GKBS_Grid/js/gridui.js"></script>
+    <script src="~/Scripts/jquery.dataTables.min.js"></script>
+    <script src="~/Scripts/dataTables.bootstrap.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -36,7 +39,7 @@
             height: 55px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;
             padding: 0 20px;
             position: fixed;
             top: 0;
@@ -137,7 +140,7 @@
         }
 
             .sidebar.open {
-                width: 220px;
+                width: 25%;
             }
 
         /* Hamburger fixed at top - changed to span not button */
@@ -155,7 +158,6 @@
             top: 0;
             left: 0;
             z-index: 10;
-
         }
 
         .menu-container {
@@ -207,7 +209,7 @@
         }
 
             .submenu.open {
-                display: flex; 
+                display: flex;
             }
 
         .submenu-item {
@@ -215,7 +217,7 @@
             color: black;
             text-decoration: none;
             font-size: 13px;
-            font-weight:600;
+            font-weight: 600;
             border-radius: 4px;
             white-space: nowrap;
             transition: background 0.2s, color 0.2s;
@@ -311,146 +313,157 @@
             cursor: pointer;
         }
     </style>
+    <style>
+
+        /* Style the tab */
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+            width: 100%;
+            /*height:40px;*/
+        }
+
+            /* Style the buttons inside the tab */
+            .tab button {
+                background-color: inherit;
+                float: left;
+                border: none;
+                outline: none;
+                cursor: pointer;
+                padding-top: 5px;
+                padding-bottom: 5px;
+                padding-left: 12px;
+                transition: 0.5s;
+                font-size: 15px;
+                border-radius: 5px;
+                width: 50%;
+            }
+
+                /* Change background color of buttons on hover */
+                .tab button:hover {
+                    background-color: lightskyblue;
+                }
+
+                /* Create an active/current tablink class */
+                .tab button.active {
+                    background-color: #ccc;
+                }
+
+        /* Style the tab content */
+        .tabcontent {
+            display: none;
+            /*padding: 6px 12px;*/
+            border: none;
+            border-top: none;
+        }
+    </style>
+    <style>
+        ul {
+            list-style-type: none;
+            padding-left: 20px;
+            margin: 0;
+            font-size: 16px; /* 🔹 Font size for UL */
+        }
+
+        li {
+            margin: 4px 0;
+            cursor: pointer;
+            user-select: none;
+            font-size: 11px; /* 🔹 Font size for LI */
+        }
+
+        .toggle {
+            margin-right: 6px;
+            font-weight: bold;
+            color: #007acc;
+        }
+
+        .collapsed {
+            display: none;
+        }
+
+        span.menu-name {
+            font-weight: normal;
+        }
+    </style>
 </head>
 <body>
-    @{ 
+    @{
         string User = Convert.ToString(Session["LoginUser"]);
         string UIDs = Convert.ToString(Session["LoginUserID"]);
         System.Data.DataTable dtParent = (System.Data.DataTable)Session["dtParent"];
         System.Data.DataTable dtPermission = (System.Data.DataTable)Session["dtPermission"];
 
-    <div class="toastBox"></div>
+        <div class="toastBox"></div>
 
-    <nav class="top-navbar">
-        <div class="navbar-left">
-
-
+        <nav class="top-navbar">
             <span class="hamburger-btn" onclick="toggleSidebar()" title="Menu">
                 <i class="fa fa-bars"></i>
             </span>
             <a href="~/Home" style="text-decoration: none; display: flex;">
                 <div class="navbar-left" style="cursor: pointer;">
-                    <img src="~/Images/logo/G_large_Transparent.png" alt="Logo" style="height:28px;" onerror="this.style.display='none'" />
+
+                    <img src="~/Content/Images/Logo.png" alt="Logo" style="height:28px;" onerror="this.style.display='none'" />
                     <span class="company-name">GK BUSINESS &amp; SOLUTIONS</span>
                 </div>
             </a>
-        </div>
-        <div class="navbar-center">
-            <div class="search-wrapper">
-                <i class="fa fa-search"></i>
-                <input type="text" class="search-box" placeholder="Looking for something?" />
-            </div>
-        </div>
 
-        <div class="navbar-right">
-            <span>Hello, <strong id="lblUserName">User</strong></span>
-            <div class="user-avatar" id="avatarIcon" onclick="toggleProfileMenu()">U</div>
+        </nav>
 
-            <div id="profileDropdown" style="display:none; position:absolute; top:52px; right:15px; background:white; border-radius:10px; min-width:200px; box-shadow:0 4px 20px rgba(0,0,0,0.15); z-index:9999; overflow:hidden; border:1px solid #eee;">
-                <div style="padding:14px 16px; border-bottom:1px solid #f0f0f0;">
-                    <div style="font-weight:700; color:#333;" id="dropUserName">User</div>
-                    <div style="font-size:11px; color:#999;">Logged In</div>
+        <div class="main-layout">
+            <div class="sidebar" id="sidebar">
+                
+                <div class="tab">
+                    <button class="tablinks active" id="tabCD" onclick="openTabs(event, 'ReportDetails')">Reports</button>
+                    <button class="tablinks" onclick="openTabs(event, 'FilterDetails')">Filters</button>
                 </div>
-                <div onclick="openChangePassword()" style="padding:12px 16px; cursor:pointer; color:#333; font-size:13px; display:flex; align-items:center; gap:10px;">
-                    <i class="fa fa-key" style="color:#008080;"></i> Change Password
+                <div id="ReportDetails" class="tabcontent">
+                    <div id="menuContainer"></div>
                 </div>
-                <div onclick="Logout()" style="padding:12px 16px; cursor:pointer; color:#e53935; font-size:13px; display:flex; align-items:center; gap:10px; border-top:1px solid #f0f0f0;">
-                    <i class="fa fa-sign-out-alt" style="color:#e53935;"></i> Logout
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <div class="main-layout">
-        <div class="sidebar" id="sidebar">
-           
-
-            <div class="menu-container">
-                <div class="menu-item">
-                    @for (int iRow = 0; iRow < dtParent.Rows.Count; iRow++)
-                    {
-                        int nParentID = Convert.ToInt32(dtParent.Rows[iRow]["MenuId"]);
-                        int nTreeID = Convert.ToInt32(dtParent.Rows[iRow]["MenuTree"]);
-                        string IsMenus = Convert.ToString(dtParent.Rows[iRow]["IsMenu"]);
-                        string strManuName = Convert.ToString(dtParent.Rows[iRow]["MenuName"]);
-                        System.Data.DataRow[] dr = dtPermission.Select("MenuParentId=" + nParentID.ToString());
-                        //System.Data.DataRow[] dr = dtPermission.Select("MenuTree=" + nParentID.ToString());
-                        if (dr.Count() > 0)
-                        {
-                            if (strManuName == "Reports")
-                            {
-                                
-                                <a href="@Url.Action("Index", "ReportsNew")" class="menu-header menu-text" target="_blank">@strManuName</a>
-                            }
-                            else if (IsMenus == "1")
-                            {
-                                <div class="menu-header" onclick="toggleSubMenu(this)">
-                                    
-                                    <span class="menu-text">@strManuName</span>
-                                    <i class="fa fa-chevron-down arrow"></i>
-                                </div>
-                            }
-                            <div class="submenu">
-                                @{
-                                    for (int j = 0; j < dr.Length; j++)
-                                    {
-                                        int nChildParentID = Convert.ToInt32(dr[j]["MenuId"].ToString());
-                                        string displayName = dr[j]["MenuName"].ToString();
-                                        string controllerName = dr[j]["LocationName"].ToString();
-                                        IsMenus = dr[j]["IsMenu"].ToString();
-                                        if (IsMenus == "1" && strManuName != "Reports")
-                                        {
-                                            <a href="@Url.Action("Index", controllerName)" class="submenu-item">@displayName</a>
-
-                                        }
-                                    }
-                                }
-                            </div>
-                        }
-                    }
-                </div>                
-            </div>
-        </div>
-        
-        <div class="content-area">
-            @RenderBody()
-        </div>
-    </div>
-                                    }
-    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="border-radius:20px; border:none; padding:20px;">
-                <div class="modal-header" style="border-bottom:none;">
-                    <h5 class="modal-title fw-bold" style="color:#008080;">Change Password</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="input-group-custom">
-                        <i class="fa-solid fa-lock"></i>
-                        <input type="password" id="cpNewPassword" class="form-control-custom" placeholder="New Password">
-                        <label class="labelup">New Password<span class="star">*</span></label>
+                <div id="FilterDetails" class="tabcontent" style="color: black; padding-left: 10px">
+                    <h4 id="RepMainHeading">Reports</h4>
+                    <div id="dvAssign" style="width:100%;padding-bottom:7px">
+                        <table style="width: 100%" id="tblFilterData">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:center;font-size: 12px;width:40%;"><u>Filter Name </u></th>
+                                    <th style="text-align:center;font-size: 12px;width:60%;"><u>Filter Value </u></th>
+                                </tr>
+                            </thead>
+                        </table>
+                        <div style="padding-top:5px" align="right">
+                            <button type="button" class="btn btn-primary d-none" id="btnScript"><span class="glyphicon glyphicon-file"> Script</span></button>
+                            <button type="button" class="btn btn-danger" id="btnClear" tabindex="5"><span class="glyphicon glyphicon-refresh"> Clear</span></button>
+                            <button type="button" class="btn btn-success" id="btnPopupGenerate" tabindex="4"><span class="glyphicon glyphicon-import"> Generate</span></button>
+                            @*<button type="button" class="btn btn-warning" id="btnClose" tabindex="6"><i class="bi bi-x-circle"></i> Close</button>*@
+                        </div>
                     </div>
-                    <div id="err_cpNewPassword" class="error-msg">Password is required</div>
-
-                    <div class="input-group-custom">
-                        <i class="fa-solid fa-check-double"></i>
-                        <input type="password" id="cpConfirmPassword" class="form-control-custom" placeholder="Confirm Password">
-                        <label class="labelup">Confirm Password<span class="star">*</span></label>
-                    </div>
-                    <div id="err_cpConfirmPassword" class="error-msg">Passwords do not match</div>
-                </div>
-                <div class="modal-footer" style="border-top:none; gap:10px;">
-                    <button type="button" data-bs-dismiss="modal" style="padding:10px 20px; border-radius:8px; border:1px solid #ddd; background:white; cursor:pointer; font-size:13px;">Close</button>
-                    <button type="button" onclick="ChangePassword()" class="btn-primary-custom" style="margin-top:0; width:auto; padding:10px 25px;">Change Password</button>
                 </div>
             </div>
+            <script>
+                var Table = $('#tblFilterData').DataTable({
+                    "bFilter": false,
+                    "bSearchable": false,
+                    "bInfo": false,
+                    "bPaginate": false,
+                    "ordering": false,
+                    //scrollY: "400px",
+                    //scrollX: true,
+                    //scrollCollapse: true,
+                });
+            </script>
+            <div class="content-area">
+                @RenderBody()
+            </div>
         </div>
-    </div>
+    }
 
     <script>
         $(document).ready(function () {
             var uid = '@Session["LoginUserID"]';
             var uname = '@Session["LoginUser"]';
+            
             $("#lblUserName, #dropUserName").text(uname);
             $("#avatarIcon").text(uname.charAt(0).toUpperCase());
             //if (!uid) { window.location.href = '/Login/Index'; }
@@ -586,4 +599,31 @@
     </script>
     @RenderSection("scripts", required: false)
 </body>
+
 </html>
+<script>
+    window.onload = function (e) {
+        // simulate a fake event if your function expects it
+        openTabs(null, 'ReportDetails', 1);
+        if (typeof FID !== "undefined" && FID > 0) {
+            openTabs(e, 'FilterDetails', 1);
+        }
+    };
+    function openTabs(evt, TabName, opentype = 0) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(TabName).style.display = "block";
+        if (opentype == 0) {
+            evt.currentTarget.className += " active";
+        } else {
+            document.getElementById(TabName).className += " active";
+        }
+    }
+</script>

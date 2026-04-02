@@ -11,12 +11,12 @@
     <link href="~/Content/5.3.8/bootstrap.min.css" rel="stylesheet" />
     <link href="~/GKBS_GRID_2.0/css/gridui.css" rel="stylesheet" />
     <script src="~/Scripts/5.3.8/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link href="~/Content/Snackbar.css" rel="stylesheet" />
     <script src="~/Scripts/Validation.js"></script>
     <script src="~/GKBS_GRID_2.0/js/gridui.js"></script>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src='https://maps.googleapis.com/maps/api/js?key=AIzaSyBDhzKQV1BgtvQdvhFwbAjUxUKp4iPL9Is'></script>
     <style>
         .top-bar {
             display: flex;
@@ -84,8 +84,8 @@
                 color: var(--error-red) !important;
             }
         /* ============================================================
-   CUSTOMER MODAL - COMPLETE CSS
-   ============================================================ */
+        CUSTOMER MODAL - COMPLETE CSS
+        ============================================================ */
 
         /* Modal Size */
         .modal-xl {
@@ -510,7 +510,9 @@
                             <!-- Geo -->
                             <div class="input-group-custom d-flex align-items-center">
                                 <input type="text" id="txtGeo" class="form-control-custom" placeholder="Geo Location" readonly>
-                                <button type="button" class="btn btn-sm btn-primary ms-2" onclick="getGeo()">📍</button>
+                                <button type="button" id="btnLocation" class="btn btn-sm btn-primary ms-2" onclick="getGeo()"><span id="spMapMark" class="fa fa-map-marker"
+
+style="font-size:16px"></span><span  id="spMapNavigate" class="fa fa-location-arrow" style="font-size:16px"></span></button>
                                 <label class="labelup">Geo Location</label>
                             </div>
                             <div id="err_GeoLocation" class="error-msg">Geo Location is required</div>
@@ -554,7 +556,7 @@
         const Aurl = '@Session["APIurl"]';
 
 
-
+        var TransMode = 1;
         const addModal = new bootstrap.Modal(document.getElementById('addCustomerModal'));
 
         $('#btnAddCustomer').click(function () {
@@ -590,6 +592,9 @@
                 title: 'Edit',
                 displayType: 'single_icon',
                 handler: function (row) {
+                    TransMode = 2;
+                    $("#spMapNavigate").hide();
+                    $("#spMapMark").show();                    
                     openEditModal(row);
                 }
             },
@@ -598,6 +603,10 @@
                 title: 'View',
                 displayType: 'single_icon',
                 handler: function (row) {
+                    TransMode = 3;
+                    //$("#btnLocation").text("🗺️");
+                     $("#spMapNavigate").show();
+ $("#spMapMark").hide();
                     openViewModal(row);
                 }
             }
@@ -626,9 +635,8 @@
     function loadDashboardGrid() {
         const Aurl = '@Session["APIurl"]';
     console.log("AURL Value: ",Aurl)
-    const userId = sessionStorage.getItem("userID");
-
-        $.get(Aurl + "customer/GetCustomerList", { userId: userId }, function (rowData) {
+   
+        $.get(Aurl + "customer/GetCustomerList", { userId: 0 }, function (rowData) {            
             console.log("Row Data:", rowData);
         //console.log("Row Data for " + apiEndpoint, rowData);
             new GKBSDynamicGrid('#grid-Customer-Detail-lists', CustomerColumns, rowData, {
@@ -652,6 +660,9 @@
                         text: 'Add New',
                         title: 'ADD',
                         onClick: function () {
+                            TransMode = 1;
+                            $("#spMapNavigate").hide();
+$("#spMapMark").show();      
                             document.getElementById('hdnCustomerID').value = "0";
                             const chkActive = document.getElementById('chkActive');
                             chkActive.checked = true;
@@ -805,8 +816,9 @@
             return true;
         }
 
-
+        
         function getGeo() {
+            if(TransMode != 3){
             if (!navigator.geolocation) {
                 alert('Geolocation not supported by your browser');
                 return;
@@ -822,6 +834,17 @@
                     alert('Could not get location. Please allow location access.');
                 }
             );
+            }
+            else{
+                var latlong = $("#txtGeo").val();
+                if(latlong){
+                    const url = `https://www.google.com/maps/dir/?api=1&destination=${latlong}`;
+  window.open(url, '_blank'); // or window.location.href
+                    //window.open("https://g","_black");
+                }else{
+                    showErrorSnackbar("Location not found");
+                }
+            }
         }
 
         function loadParentCompOptions() {
@@ -858,7 +881,7 @@
 
             if (!validateAll()) return;
 
-            const userId = sessionStorage.getItem("userID");
+            const userId = '@Session["LoginUserID"]';
 
             const geoVal = document.getElementById('txtGeo').value.trim();
             let lat = "", lng = "";
@@ -897,7 +920,7 @@
                 MobileApp: document.getElementById('txtMobileApp').value.trim(),
                 ParentCompCode: document.getElementById('txtParentComp').value,
                 Latitude: lat,
-                Longitude: lng,
+                Longtitude: lng,
                 Address: document.getElementById('txtAddress').value.trim(),
                 Active: activeVal,
                 UID: userId,
@@ -950,8 +973,8 @@
             document.getElementById('txtAddress').value = row.Address || '';
 
             // 3. Set Geo
-            if (row.Latitude && row.Longitude) {
-                document.getElementById('txtGeo').value = row.Latitude + ', ' + row.Longitude;
+            if (row.Latitude && row.Longtitude) {
+                document.getElementById('txtGeo').value = row.Latitude + ', ' + row.Longtitude;
             }
 
             // 4. Set ShineType radio (1 = FA, 0 = Non FA)
@@ -997,8 +1020,8 @@
             document.getElementById('txtParentComp').value = row.ParentCompCode || '';
             document.getElementById('txtAddress').value = row.Address || '';
 
-            if (row.Latitude && row.Longitude) {
-                document.getElementById('txtGeo').value = row.Latitude + ', ' + row.Longitude;
+            if (row.Latitude && row.Longtitude) {
+                document.getElementById('txtGeo').value = row.Latitude + ', ' + row.Longtitude;
             }
 
             document.querySelectorAll('input[name="shineType"]').forEach(r => r.checked = false);

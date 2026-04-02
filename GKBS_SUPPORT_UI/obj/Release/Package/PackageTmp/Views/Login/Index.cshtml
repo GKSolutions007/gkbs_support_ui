@@ -648,13 +648,11 @@ function Login() {
         dataType: 'json',
         data: { UserName: strusername, Password: strpassword },
         success: function (response) {
-            console.log("API Response:", response);
-            $("#loadingDiv").remove(); // ✅ Remove loader after API responds
-
+            $("#loadingDiv").remove(); 
             if (response && response.length > 0) {
-                var user = response[0];
-
-                if (user.ID) {
+                var user = response[0];                
+                window.location.href = 'ValidatePermission?ID=' + user.ID;
+                @*if (user.ID) {
                     sessionStorage.setItem("userName", user.UserName);
                     sessionStorage.setItem("userID", user.ID);
                     showSuccessSnackbar("Login Successful!");
@@ -663,6 +661,7 @@ function Login() {
                         { userID: user.ID, userName: user.UserName },
                         function (res) {
                             if (res.success) {
+                                $("#loadingDiv").remove(); // ✅ Remove loader after API responds
                                 $("#txtUserName").val("");
                                 $("#txtPassword").val("");
                                 setTimeout(function () {
@@ -676,7 +675,7 @@ function Login() {
                     );
                 } else {
                     showErrorSnackbar("Invalid Username or Password.");
-                }
+                }*@
             } else {
                 showErrorSnackbar("Invalid Username or Password.");
             }
@@ -687,15 +686,6 @@ function Login() {
         }
     });
 }
-        function showError(msg) {
-            alert("❌ " + msg);
-        }
-
-        function showSuccess(msg) {
-            alert("✅ "+ msg)
-        }
-
-
         function VerifyOTP() {
             var otpVal = $("#txtOTPCode").val().trim();
             if (otpVal.length < 6) {
