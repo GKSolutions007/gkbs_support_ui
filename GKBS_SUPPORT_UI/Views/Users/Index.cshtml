@@ -321,6 +321,43 @@
         .input-group-custom > .labelup {
             z-index: 1;
         }
+
+/*Status Badge */
+        .dg-status-badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: 13px; /* medium text size */
+            padding: 3px 8px; /* slightly more breathing room */
+            border-radius: 12px; /* pill shape */
+            line-height: 1.4; /* keeps row height consistent */
+            white-space: nowrap; /* prevents wrapping in table cells */
+        }
+
+        .dg-status-circle {
+            width: 9px; /* medium circle */
+            height: 9px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .dg-status-active {
+            background-color: #eaf9ea;
+            color: #2e7d32;
+        }
+
+            .dg-status-active .dg-status-circle {
+                background-color: #2e7d32;
+            }
+
+        .dg-status-inactive {
+            background-color: #fdeaea;
+            color: #c62828;
+        }
+
+            .dg-status-inactive .dg-status-circle {
+                background-color: #c62828;
+            }
+
     </style>
 
 </head>
@@ -329,7 +366,7 @@
     <div class="Main-Container">
         <div class="grid-container">
             <!-- Top Bar -->
-            <div class="top-bar">
+            <!--<div class="top-bar">
                 <div class="top-bar-left">
                     <div class="breadcrumb-row">
                         <span class="breadcrumb-home">🏠 Home</span>
@@ -342,7 +379,7 @@
                     <button class="btn-print">🖨️ Print</button>
                     <button class="btn-add" id="btnAddUser">+ Add</button>
                 </div>
-            </div>
+            </div>-->
 
             <div class="Table-Container">
                 <div id="grid-Users-lists"></div>
@@ -353,7 +390,7 @@
     </div>
 
     <div class="modal fade" id="addUserModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-md">
             <div class="modal-content">
 
                 <!-- HEADER -->
@@ -369,7 +406,7 @@
                     <div class="row g-3">
 
                         <!-- 🔹 COLUMN 1 -->
-                        <div class="col-md-4">
+                        <div class="col-md-6">
 
                             <div class="input-group-custom">
                                 <i class="fa-solid fa-id-card"></i>
@@ -402,7 +439,7 @@
                         </div>
 
                         <!-- 🔹 COLUMN 2 -->
-                        <div class="col-md-4">
+                        <div class="col-md-6">
 
                             <div class="input-group-custom">
                                 <i class="fa-solid fa-user"></i>
@@ -468,13 +505,13 @@
 
         const addModal = new bootstrap.Modal(document.getElementById('addUserModal'));
 
-        $('#btnAddUser').click(function () {
-            document.getElementById('hdnCustomerID').value = "0";
-            const chkActive = document.getElementById('chkActive');
-            chkActive.checked = true;
-            chkActive.disabled = true;
-            addModal.show();
-        });
+        //$('#btnAddUser').click(function () {
+        //    document.getElementById('hdnCustomerID').value = "0";
+        //    const chkActive = document.getElementById('chkActive');
+        //    chkActive.checked = true;
+        //    chkActive.disabled = true;
+        //    addModal.show();
+        //});
 
         document.getElementById('btnClose').addEventListener('click', function () {
             ['txtUserID', 'Signuppassword', 'SignupMobNo', 'txtFile',
@@ -495,176 +532,6 @@
             addModal.hide();
         });
 
-        //var UserColumns = [
-        //    {
-        //        "field": "UserID",
-        //        "header": "User ID",
-        //        "type": "label",
-        //        "width": 200,
-        //        "align": "left",
-        //        "visible": true,
-        //        "EnableColumnMenu": true,
-        //        "ShowinColumnOption": true,
-        //        "Total": false,
-        //        "TotalYN": "0",
-        //        "EnableSum": false,
-        //        "EnableAvg": false,
-        //        "EnableCount": false,
-        //        "EnableUnique": false,
-        //        "precision": "2",
-        //        "ClickPopup": false,
-        //        "Printwidth": 200,
-        //        "PrintYN": false,
-        //        "PrintColumnName": "User ID"
-        //    },
-        //    {
-        //        "field": "Mobilenumber",
-        //        "header": "Mobile No",
-        //        "type": "label",
-        //        "width": 200,
-        //        "align": "left",
-        //        "visible": true,
-        //        "EnableColumnMenu": true,
-        //        "ShowinColumnOption": true,
-        //        "Total": false,
-        //        "TotalYN": "0",
-        //        "EnableSum": false,
-        //        "EnableAvg": false,
-        //        "EnableCount": false,
-        //        "EnableUnique": false,
-        //        "precision": "2",
-        //        "ClickPopup": false,
-        //        "Printwidth": 200,
-        //        "PrintYN": false,
-        //        "PrintColumnName": "Mobile No"
-        //    },
-        //    {
-        //        "field": "Attachments",
-        //        "header": "Attachments",
-        //        "type": "file",
-        //        "width": 200,
-        //        "align": "left",
-        //        "visible": false,
-        //        "EnableColumnMenu": false,
-        //        "ShowinColumnOption": true,
-        //        "Total": false,
-        //        "TotalYN": "0",
-        //        "EnableSum": false,
-        //        "EnableAvg": false,
-        //        "EnableCount": false,
-        //        "EnableUnique": false,
-        //        "precision": "0",
-        //        "ClickPopup": false,
-        //        "Printwidth": 200,
-        //        "PrintYN": false,
-        //        "PrintColumnName": "Attachments"
-        //    },
-        //    {
-        //        "field": "UserName",
-        //        "header": "User Name",
-        //        "type": "label",
-        //        "width": 200,
-        //        "align": "left",
-        //        "visible": true,
-        //        "EnableColumnMenu": true,
-        //        "ShowinColumnOption": true,
-        //        "Total": false,
-        //        "TotalYN": "0",
-        //        "EnableSum": false,
-        //        "EnableAvg": false,
-        //        "EnableCount": false,
-        //        "EnableUnique": false,
-        //        "precision": "2",
-        //        "ClickPopup": false,
-        //        "Printwidth": 200,
-        //        "PrintYN": false,
-        //        "PrintColumnName": "User Name"
-        //    },
-        //    {
-        //        "field": "EMailID",
-        //        "header": "Email Address",
-        //        "type": "label",
-        //        "width": 200,
-        //        "align": "left",
-        //        "visible": true,
-        //        "EnableColumnMenu": true,
-        //        "ShowinColumnOption": true,
-        //        "Total": false,
-        //        "TotalYN": "0",
-        //        "EnableSum": false,
-        //        "EnableAvg": false,
-        //        "EnableCount": false,
-        //        "EnableUnique": false,
-        //        "precision": "2",
-        //        "ClickPopup": false,
-        //        "Printwidth": 200,
-        //        "PrintYN": false,
-        //        "PrintColumnName": "Email Address"
-        //    },
-        //    {
-        //        "field": "EmployeeNo",
-        //        "header": "Employee No",
-        //        "type": "label",
-        //        "width": 200,
-        //        "align": "left",
-        //        "visible": true,
-        //        "EnableColumnMenu": true,
-        //        "ShowinColumnOption": true,
-        //        "Total": false,
-        //        "TotalYN": "0",
-        //        "EnableSum": false,
-        //        "EnableAvg": false,
-        //        "EnableCount": false,
-        //        "EnableUnique": false,
-        //        "precision": "2",
-        //        "ClickPopup": false,
-        //        "Printwidth": 200,
-        //        "PrintYN": false,
-        //        "PrintColumnName": "Employee No"
-        //    },
-        //    {
-        //        "field": "Active",
-        //        "header": "Active",
-        //        "type": "label",
-        //        "width": 200,
-        //        "align": "left",
-        //        "visible": true,
-        //        "EnableColumnMenu": true,
-        //        "ShowinColumnOption": true,
-        //        "Total": false,
-        //        "TotalYN": "0",
-        //        "EnableSum": false,
-        //        "EnableAvg": false,
-        //        "EnableCount": false,
-        //        "EnableUnique": false,
-        //        "precision": "2",
-        //        "ClickPopup": false,
-        //        "Printwidth": 200,
-        //        "PrintYN": false,
-        //        "PrintColumnName": "Active"
-        //    },
-        //    {
-        //        "field": "ID",
-        //        "header": "Action",
-        //        "type": "action3dots",
-        //        "width": 80,
-        //        "align": "center",
-        //        "visible": true,
-        //        "EnableColumnMenu": false,
-        //        "ShowinColumnOption": false,
-        //        "Total": false,
-        //        "TotalYN": "0",
-        //        "EnableSum": false,
-        //        "EnableAvg": false,
-        //        "EnableCount": false,
-        //        "EnableUnique": false,
-        //        "precision": "2",
-        //        "ClickPopup": false,
-        //        "Printwidth": 80,
-        //        "PrintYN": false,
-        //        "PrintColumnName": "Action"
-        //    },
-        //];
         const allGridActions = [
             {
                 icon: '✏️',
@@ -686,7 +553,7 @@
         var UserColumns = [];
         const singleIconAction = allGridActions.filter(a => a.displayType === 'single_icon');
         const menuActions = [];
-
+        let userList = [];
 
         var actions = {
             "header": "Action",
@@ -702,7 +569,7 @@
         GetColumnSettingsData(2, 4, 1);
 
             $(document).ready(function () {
-                loadDashboardGrid(1002, 1, '#grid-Users-lists', "uspgetuserslist", "", UserColumns);
+                    loadDashboardGrid(1002, 1, '#grid-Users-lists', "uspgetuserslist", "", UserColumns);
     });
 
     function loadDashboardGrid(reportId, tableId, selector, apiEndpoint, headings, columns) {
@@ -715,7 +582,7 @@
             new GKBSDynamicGrid('#grid-Users-lists', UserColumns, rowData, {
             enablePagination: true,
             pageSize: 10,
-            height: "200px",
+            height: "400px",
             enableSearch: true,
             stickyToWindow: true,
             enableExport: false,
@@ -724,11 +591,42 @@
             enableAddRow: false,
             enableRemoveRow: false,
             enableSorting: true,
-            searchTerm: "",
+                searchTerm: "",
+                ReportName: "Customer",
             CompanyName: "GKBS Support",
-                ReportName: "",
+                ReportName: "User Lists",
+                customButtons: [
+                    {
+                        icon: '➕',
+                        text: 'Add New',
+                        title: 'ADD',
+                        onClick: function () {
+                            document.getElementById('hdnCustomerID').value = "0";
+                            const chkActive = document.getElementById('chkActive');
+                            chkActive.checked = true;
+                            chkActive.disabled = true;
+                            addModal.show();
+                        }
+                    }
+                ],
                 singleIconAction: singleIconAction, // Pass the single View action
                 rowActionsMenu: menuActions, 
+                customCellRenderer: (el, col, rowData) => {
+                    if (col.field === 'Active') {
+                        const val = rowData[col.field];
+                        console.log("Active : ", val);
+                        if (val === 'True') {
+                            el.innerHTML = `<div class="dg-status-badge dg-status-active">
+                      <span class="dg-status-circle"></span> Active
+                  </div>`;
+                        } else if (val === 'False') {
+                            el.innerHTML = `<div class="dg-status-badge dg-status-inactive">
+                      <span class="dg-status-circle"></span> In-Active
+                  </div>`;
+                        }
+                    }
+                },
+
         });
     }).fail(function(xhr) {
         console.error("Row Data FAILED for " + apiEndpoint, xhr.status, xhr.responseText);

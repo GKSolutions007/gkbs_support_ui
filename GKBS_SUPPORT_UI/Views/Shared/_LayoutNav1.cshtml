@@ -389,6 +389,16 @@
                         <a href="@Url.Action("Index", "ToDoList")" class="submenu-item">To Do List</a>
                     </div>
                 </div>
+                <div class="menu-item">
+                    <div class="menu-header" onclick="toggleSubMenu(this)">
+                        <i class="fa fa-chart-bar"></i>
+                        <span class="menu-text">Reports</span>
+                        <i class="fa fa-chevron-down arrow"></i>
+                    </div>
+                    <div class="submenu">
+                        <a href="@Url.Action("Index", "Reports")" class="submenu-item">Reports Master</a>
+                    </div>
+                </div>
             </div>
         </div>
 
