@@ -164,18 +164,6 @@
     <div class="Main-Container">
         <div class="grid-container">
 
-            <!-- Top Bar -->
-            <div class="top-bar">
-                <div class="top-bar-left">
-                    <div class="breadcrumb-row">
-                        <span class="breadcrumb-home">🏠 Home</span>
-                        <span class="breadcrumb-arrow"> > </span>
-                        <span class="breadcrumb-current">Transactions | To Do List</span>
-                    </div>
-                    <h2>To Do List</h2>
-                </div>
-            </div>
-
             <div class="status-counts">
                 <span id="badge-open">OPEN: 0</span>
                 <span id="badge-close">CLOSE: 0</span>
@@ -393,6 +381,7 @@
             enableAddRow: false,
             enableSorting: true,
             stickyToWindow: true,
+            ReportName: "To Do List",
             onCellChange: function (field, value, row) {
 
                 row.isNew = true;
