@@ -421,34 +421,87 @@
                             <div id="err_CustName" class="error-msg">Customer Name is required</div>
 
                             <div class="input-group-custom">
+                                <select id="txtParentComp" class="form-control-custom">
+                                    <option value="" selected disabled hidden>Select Parent Company</option>
+                                </select>
+                                <label class="labelup">Parent Comp Code</label>
+                            </div>
+                            <div id="err_CompCode" class="error-msg">Parent Comp Code is required</div>
+                            <div class="input-group-custom">
                                 <i class="fa-solid fa-file"></i>
-                                <input type="text" id="txtGSTIN" class="form-control-custom" placeholder="GSTIN">
+                                <input type="number" id="txtMobNo" class="form-control-custom" maxlength="12" placeholder="Mobile No">
+                                <label class="labelup">Mobile No</label>
+                            </div>
+                            <div id="err_MobNo" class="error-msg">Mobile No is required</div>
+                            
+                            <div class="input-group-custom">
+                                <i class="fa-solid fa-file"></i>
+                                <input type="email" id="txtEmailID" class="form-control-custom" placeholder="E-Mail ID">
+                                <label class="labelup">E-Mail ID</label>
+                            </div>
+                            <div id="err_EmailID" class="error-msg">E-Mail ID No is required</div>
+
+                            <div class="input-group-custom">
+                                <i class="fa-solid fa-file"></i>
+                                <input type="text" id="txtGSTIN" class="form-control-custom" maxlength="15" placeholder="GSTIN">
                                 <label class="labelup">GSTIN</label>
                             </div>
                             <div id="err_GSTIN" class="error-msg">GSTIN is required</div>
 
-                            <div class="input-group-custom">
-                                <input type="date" id="txtAMCDate" class="form-control-custom">
-                                <label class="labelup">AMC Date</label>
-                            </div>
-                            <div id="err_AMCDate" class="error-msg">AMC Date is required</div>
-
-                            <div class="input-group-custom">
-                                <input type="date" id="txtRegisteredDate" class="form-control-custom">
-                                <label class="labelup">Registered Date</label>
-                            </div>
-                            <div id="err_RegDate" class="error-msg">Registered Date is required</div>
 
                         </div>
 
                         <!-- 🔹 COLUMN 2 -->
                         <div class="col-md-4">
-
-                            <div class="input-group-custom">
-                                <input type="date" id="txtExpDate" class="form-control-custom">
-                                <label class="labelup">Expiry Date</label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="input-group-custom">
+                                        <input type="date" id="txtRegisteredDate" class="form-control-custom">
+                                        <label class="labelup">Registered Date</label>
+                                    </div>
+                                    <div id="err_RegDate" class="error-msg">Registered Date is required</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="input-group-custom">
+                                        <input type="date" id="txtAMCDate" class="form-control-custom">
+                                        <label class="labelup">AMC Date</label>
+                                    </div>
+                                    <div id="err_AMCDate" class="error-msg">AMC Date is required</div>
+                                </div>
                             </div>
-                            <div id="err_ExpDate" class="error-msg">Expiry Date is required</div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="input-group-custom">
+                                        <input type="date" id="txtExpDate" class="form-control-custom">
+                                        <label class="labelup">Expiry Date</label>
+                                    </div>
+                                    <div id="err_ExpDate" class="error-msg">Expiry Date is required</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="input-group-custom">
+                                        <input type="date" id="txtWebExpDate" class="form-control-custom">
+                                        <label class="labelup">Web Expiry Date</label>
+                                    </div>
+                                    <div id="err_WebExpDate" class="error-msg">Web Expiry Date is required</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="input-group-custom">
+                                        <input type="text" id="txtClients" class="form-control-custom" placeholder="No of Clients" value="1">
+                                        <label class="labelup">No. of Clients</label>
+                                    </div>
+                                    <div id="err_NoofClients" class="error-msg">No of Clients is required</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="input-group-custom">
+                                        <input type="text" id="txtMobileApp" class="form-control-custom" placeholder="Mobile App" value="0">
+                                        <label class="labelup">Mobile App</label>
+                                    </div>
+                                    <div id="err_MobileApp" class="error-msg">Mobile App is required</div>
+                                </div>
+                            </div>
+
 
                             <div class="input-group-custom">
                                 <input type="text" id="txtVersion" class="form-control-custom" placeholder="Version">
@@ -461,7 +514,7 @@
                                 <label class="labelup">Shine Type</label>
                                 <div class="mt-3">
                                     <input type="radio" name="shineType" value="FA"> FA
-                                    <input type="radio" name="shineType" value="Non FA" class="ms-3"> Non FA
+                                    <input type="radio" name="shineType" value="Non FA" class="ms-3" checked> Non FA
                                 </div>
                             </div>
                             <div id="err_ShineType" class="error-msg">Shine Type is required</div>
@@ -470,49 +523,25 @@
                             <div class="input-group-custom">
                                 <label class="labelup">User Type</label>
                                 <div class="mt-3">
-                                    <input type="radio" name="userType" value="Single"> Single
+                                    <input type="radio" name="userType" value="Single" checked> Single
                                     <input type="radio" name="userType" value="Multi" class="ms-3"> Multi
                                 </div>
                             </div>
                             <div id="err_UserType" class="error-msg">User Type is required</div>
 
-                            <!-- File -->
-                            <div class="input-group-custom">
-                                <input type="file" id="txtFile" class="form-control-custom" placeholder="Attachment">
-                                <label class="labelup">Attachment</label>
-                            </div>
+
 
                         </div>
 
                         <!-- 🔹 COLUMN 3 -->
                         <div class="col-md-4">
-
-                            <div class="input-group-custom">
-                                <input type="text" id="txtClients" class="form-control-custom" placeholder="No of Clients">
-                                <label class="labelup">No. of Clients</label>
-                            </div>
-                            <div id="err_NoofClients" class="error-msg">No of Clients is required</div>
-
-                            <div class="input-group-custom">
-                                <input type="text" id="txtMobileApp" class="form-control-custom" placeholder="Mobile App">
-                                <label class="labelup">Mobile App</label>
-                            </div>
-                            <div id="err_MobileApp" class="error-msg">Mobile App is required</div>
-
-                            <div class="input-group-custom">
-                                <select id="txtParentComp" class="form-control-custom">
-                                    <option value="" selected disabled hidden>Select Parent Company</option>
-                                </select>
-                                <label class="labelup">Parent Comp Code</label>
-                            </div>
-                            <div id="err_CompCode" class="error-msg">Parent Comp Code is required</div>
-
                             <!-- Geo -->
                             <div class="input-group-custom d-flex align-items-center">
                                 <input type="text" id="txtGeo" class="form-control-custom" placeholder="Geo Location" readonly>
-                                <button type="button" id="btnLocation" class="btn btn-sm btn-primary ms-2" onclick="getGeo()"><span id="spMapMark" class="fa fa-map-marker"
-
-style="font-size:16px"></span><span  id="spMapNavigate" class="fa fa-location-arrow" style="font-size:16px"></span></button>
+                                <button type="button" id="btnLocation" class="btn btn-sm btn-primary ms-2" onclick="getGeo()">
+                                    <span id="spMapMark" class="fa fa-map-marker"
+                                          style="font-size:16px"></span><span id="spMapNavigate" class="fa fa-location-arrow" style="font-size:16px"></span>
+                                </button>
                                 <label class="labelup">Geo Location</label>
                             </div>
                             <div id="err_GeoLocation" class="error-msg">Geo Location is required</div>
@@ -522,7 +551,11 @@ style="font-size:16px"></span><span  id="spMapNavigate" class="fa fa-location-ar
                                 <label class="labelup">Address</label>
                             </div>
                             <div id="err_Address" class="error-msg">Address is required</div>
-
+                            <!-- File -->
+                            <div class="input-group-custom">
+                                <input type="file" id="txtFile" class="form-control-custom" placeholder="Attachment">
+                                <label class="labelup">Attachment</label>
+                            </div>
                             <div class="mt-2">
                                 <input type="checkbox" id="chkActive"> Active
                             </div>
@@ -570,7 +603,8 @@ style="font-size:16px"></span><span  id="spMapNavigate" class="fa fa-location-ar
         document.getElementById('btnClose').addEventListener('click', function () {
             ['txtCustomerCode', 'txtCustomerName', 'txtGSTIN', 'txtAMCDate',
                 'txtRegisteredDate', 'txtExpDate', 'txtVersion', 'txtClients',
-                'txtMobileApp', 'txtParentComp', 'txtAddress', 'txtGeo'
+                'txtMobileApp', 'txtParentComp', 'txtAddress', 'txtGeo', 'txtWebExpDate',
+                'txtMobNo', 'txtEmailID'
             ].forEach(function (id) {
                 const el = document.getElementById(id);
                 if (el) el.disabled = false;
@@ -594,7 +628,7 @@ style="font-size:16px"></span><span  id="spMapNavigate" class="fa fa-location-ar
                 handler: function (row) {
                     TransMode = 2;
                     $("#spMapNavigate").hide();
-                    $("#spMapMark").show();                    
+                    $("#spMapMark").show();
                     openEditModal(row);
                 }
             },
@@ -609,6 +643,17 @@ style="font-size:16px"></span><span  id="spMapNavigate" class="fa fa-location-ar
  $("#spMapMark").hide();
                     openViewModal(row);
                 }
+            },
+            {
+                icon: '📥',
+                title: 'Sync',
+                displayType: 'single_icon',
+                handler: function (row) {
+
+                    var CompCode = row.Customercode;
+                    SyncCompany(CompCode);
+
+                }
             }
         ];
         var CustomerColumns = [];
@@ -618,7 +663,7 @@ style="font-size:16px"></span><span  id="spMapNavigate" class="fa fa-location-ar
         var actions = {
             "header": "Action",
             "type": "action",
-            "width": 80,
+            "width": 100,
             "align": "center",
             "visible": true,
             "specialColumn": true,
@@ -631,12 +676,19 @@ style="font-size:16px"></span><span  id="spMapNavigate" class="fa fa-location-ar
         loadDashboardGrid();
         loadParentCompOptions();
     //});
-
+        function SyncCompany(strCompanyCode) {
+            $.get(Aurl + "customer/synccompany", { CompanyCode: strCompanyCode }, function (rowData) {
+                if (rowData.Status == "Success")
+                    showSuccessSnackbar(rowData.Message);
+                else
+                    showErrorSnackbar(rowData.Message);
+            });
+        }
     function loadDashboardGrid() {
         const Aurl = '@Session["APIurl"]';
     console.log("AURL Value: ",Aurl)
-   
-        $.get(Aurl + "customer/GetCustomerList", { userId: 0 }, function (rowData) {            
+
+        $.get(Aurl + "customer/GetCustomerList", { userId: 0 }, function (rowData) {
             console.log("Row Data:", rowData);
         //console.log("Row Data for " + apiEndpoint, rowData);
             new GKBSDynamicGrid('#grid-Customer-Detail-lists', CustomerColumns, rowData, {
@@ -658,21 +710,32 @@ style="font-size:16px"></span><span  id="spMapNavigate" class="fa fa-location-ar
                     {
                         icon: '➕',
                         text: 'Add New',
-                        title: 'ADD',
+                        title: 'Add New',
                         onClick: function () {
                             TransMode = 1;
+                            document.querySelector('.modal-title').textContent = 'Add Customer';
+
                             $("#spMapNavigate").hide();
-$("#spMapMark").show();      
+$("#spMapMark").show();
                             document.getElementById('hdnCustomerID').value = "0";
                             const chkActive = document.getElementById('chkActive');
                             chkActive.checked = true;
                             chkActive.disabled = true;
+                            setDefaultDate();
                             addModal.show();
+                        }
+                    },
+                    {
+                        icon: '📥',
+                        text: 'Sync All',
+                        title: 'Sync All Companies',
+                        onClick: function () {
+                            SyncCompany("");
                         }
                     }
                 ],
                 singleIconAction: singleIconAction, // Pass the single View action
-                rowActionsMenu: menuActions,   
+                rowActionsMenu: menuActions,
                 rowActionsMenu: actions,
                 customCellRenderer: (el, col, rowData) => {
                     if (col.field === 'Active') {
@@ -732,6 +795,8 @@ $("#spMapMark").show();
         }
 
         function validateRequired(inputId, errId, label) {
+            hideErr(errId);
+            setValid(inputId);
             const el = document.getElementById(inputId);
             if (!el) return true;
             const val = el.value.trim();
@@ -740,11 +805,18 @@ $("#spMapMark").show();
                 setError(inputId);
                 return false;
             }
-            hideErr(errId);
-            setValid(inputId);
+           
             return true;
         }
+        function setDefaultDate() {
+            let today = new Date().toISOString().split('T')[0];
 
+            document.getElementById("txtAMCDate").value = today;
+            document.getElementById("txtRegisteredDate").value = today;
+            document.getElementById("txtExpDate").value = today;
+            document.getElementById("txtWebExpDate").value = today;
+
+        }
         function formatDateForInput(dateVal) {
             if (!dateVal) return '';
             const parts = dateVal.split(' ')[0].split('/');
@@ -770,8 +842,8 @@ $("#spMapMark").show();
                 setError(inputId);
                 return false;
             }
-            if (parseInt(val) <= 0) {
-                showErr(errId, label + ' must be greater than 0');
+            if (parseInt(val) < 0) {
+                showErr(errId, label + ' must be a number');
                 setError(inputId);
                 return false;
             }
@@ -779,30 +851,44 @@ $("#spMapMark").show();
             setValid(inputId);
             return true;
         }
+        //document.getElementById('txtMobNo').value = row.MobileNo || '';
+        //document.getElementById('txtEmailID').value = row.EmailID || '';
+        function validateMobileNo() {
+            hideErr('err_MobNo');
+            setValid('txtMobNo');
+            var strMobNoRegex = /^([[0-9]{10,12})+$/;
+            const el = document.getElementById('txtMobNo');
+            if (!el) return true;
+            const val = el.value.trim().toUpperCase();
 
+            if (val.length > 0) {
+                if (!strMobNoRegex.test(val)) {
+                    showErr('err_MobNo', 'Invalid Mobile No format');
+                    setError('txtMobNo');
+                    return false;
+                }
+            }
+            return true;
+        }
 
         function validateGSTIN() {
             const el = document.getElementById('txtGSTIN');
             if (!el) return true;
             const val = el.value.trim().toUpperCase();
-
-            if (!val) {
-                showErr('err_GSTIN', 'GSTIN is required');
-                setError('txtGSTIN');
-                return false;
-            }
-            if (val.length !== 15) {
-                showErr('err_GSTIN', 'GSTIN must be exactly 15 characters');
-                setError('txtGSTIN');
-                return false;
-            }
-            if (!GSTIN_REGEX.test(val)) {
-                showErr('err_GSTIN', 'Invalid GSTIN format — e.g. 22AAAAA0000A1Z5');
-                setError('txtGSTIN');
-                return false;
-            }
             hideErr('err_GSTIN');
             setValid('txtGSTIN');
+            if (val.length > 0) {
+                if (val.length !== 15) {
+                    showErr('err_GSTIN', 'GSTIN must be exactly 15 characters');
+                    setError('txtGSTIN');
+                    return false;
+                }
+                if (!GSTIN_REGEX.test(val)) {
+                    showErr('err_GSTIN', 'Invalid GSTIN format — e.g. 22AAAAA0000A1Z5');
+                    setError('txtGSTIN');
+                    return false;
+                }
+            }
             return true;
         }
 
@@ -816,7 +902,7 @@ $("#spMapMark").show();
             return true;
         }
 
-        
+
         function getGeo() {
             if(TransMode != 3){
             if (!navigator.geolocation) {
@@ -827,6 +913,7 @@ $("#spMapMark").show();
                 function (pos) {
                     const val = pos.coords.latitude.toFixed(6) + ', ' + pos.coords.longitude.toFixed(6);
                     document.getElementById('txtGeo').value = val;
+                    getReverseGeocodingData(pos.coords.latitude, pos.coords.longitude);
                     hideErr('err_GeoLocation');
                     setValid('txtGeo');
                 },
@@ -845,6 +932,46 @@ $("#spMapMark").show();
                     showErrorSnackbar("Location not found");
                 }
             }
+        }
+        function getReverseGeocodingData(lat, lng) {
+            var latlng = new google.maps.LatLng(lat, lng);
+            // This is making the Geocode request
+            var geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ 'latLng': latlng }, (results, status) => {
+                if (status !== google.maps.GeocoderStatus.OK) {
+                    alert(status);
+                }
+                // This is checking to see if the Geoeode Status is OK before proceeding
+                if (status == google.maps.GeocoderStatus.OK) {
+                    console.log(results);
+                    //var Loadintbl = "<table class='table table-hover table-bordered'>";
+                    //for (var i = 0; i < results.length; i++) {
+                    //    Loadintbl += "<tr><td>"+(i+1) +".) "+results[i].formatted_address+"</td></tr>";
+                    //}
+                    //Loadintbl += "</table>";
+                    var address = (results[0].formatted_address);
+
+                    var value = address.split(",");
+                    count = value.length;
+                    country = value[count - 1];
+                    statewithcode = value[count - 2];
+                    state = statewithcode.substr(0, statewithcode.length - 6);
+                    pincode = statewithcode.substr(statewithcode.length - 6);
+                    city = value[count - 3];
+                    var madds1 = "", madds2 = "", madds3 = "";;
+                    var ncount = Math.round((count - 3) / 2);
+                    for (var i = 0; i < count - 3; i++) {
+                        if (ncount > i) {
+                            madds1 += value[i] + ",";
+                        } else {
+                            madds2 += value[i].trim() + ",";
+                        }
+                    }
+                    madds3 = city.trim() + " - " + pincode.trim() + ", " + state.trim();
+                    address = madds1 + madds2 + madds3;
+                    $('#txtAddress').val(address.trim());
+                }
+            });
         }
 
         function loadParentCompOptions() {
@@ -909,10 +1036,15 @@ $("#spMapMark").show();
                 ID: customerId,
                 Customercode: document.getElementById('txtCustomerCode').value.trim(),
                 Customername: document.getElementById('txtCustomerName').value.trim(),
+                //txtMobNo,txtEmailID
+                MobileNo: document.getElementById('txtMobNo').value.trim(),
+                EmailID: document.getElementById('txtEmailID').value.trim(),
                 GSTIN: document.getElementById('txtGSTIN').value.trim(),
                 AmcDate: document.getElementById('txtAMCDate').value,
                 RegisteredDate: document.getElementById('txtRegisteredDate').value,
                 ExpDate: document.getElementById('txtExpDate').value,
+                WebExpDate: document.getElementById('txtWebExpDate').value,
+
                 Version: document.getElementById('txtVersion').value.trim(),
                 ShineType: shineVal,
                 Usertype: userVal,
@@ -962,10 +1094,15 @@ $("#spMapMark").show();
             // 2. Fill all fields
             document.getElementById('txtCustomerCode').value = row.Customercode || '';
             document.getElementById('txtCustomerName').value = row.Customername || '';
+                    document.getElementById('txtMobNo').value = row.MobileNo || '';
+            document.getElementById('txtEmailID').value = row.EmailID || '';
+
             document.getElementById('txtGSTIN').value = row.GSTIN || '';
             document.getElementById('txtAMCDate').value = formatDateForInput(row.AmcDate);
             document.getElementById('txtRegisteredDate').value = formatDateForInput(row.RegisteredDate);
             document.getElementById('txtExpDate').value = formatDateForInput(row.ExpDate);
+            document.getElementById('txtWebExpDate').value = formatDateForInput(row.WebExpDate);
+
             document.getElementById('txtVersion').value = row.Version || '';
             document.getElementById('txtClients').value = row.NoofClient || '';
             document.getElementById('txtMobileApp').value = row.MobileApp || '';
@@ -1010,10 +1147,13 @@ $("#spMapMark").show();
             document.getElementById('hdnCustomerID').value = row.ID;
             document.getElementById('txtCustomerCode').value = row.Customercode || '';
             document.getElementById('txtCustomerName').value = row.Customername || '';
+            document.getElementById('txtMobNo').value = row.MobileNo || '';
+            document.getElementById('txtEmailID').value = row.EmailID || '';
             document.getElementById('txtGSTIN').value = row.GSTIN || '';
             document.getElementById('txtAMCDate').value = formatDateForInput(row.AmcDate);
             document.getElementById('txtRegisteredDate').value = formatDateForInput(row.RegisteredDate);
             document.getElementById('txtExpDate').value = formatDateForInput(row.ExpDate);
+            document.getElementById('txtWebExpDate').value = formatDateForInput(row.WebExpDate);
             document.getElementById('txtVersion').value = row.Version || '';
             document.getElementById('txtClients').value = row.NoofClient || '';
             document.getElementById('txtMobileApp').value = row.MobileApp || '';
@@ -1042,10 +1182,10 @@ $("#spMapMark").show();
             chkActive.checked = row.Active === 'True';
             chkActive.disabled = true;
 
-
             ['txtCustomerCode', 'txtCustomerName', 'txtGSTIN', 'txtAMCDate',
                 'txtRegisteredDate', 'txtExpDate', 'txtVersion', 'txtClients',
-                'txtMobileApp', 'txtParentComp', 'txtAddress', 'txtGeo'
+                'txtMobileApp', 'txtParentComp', 'txtAddress', 'txtGeo', 'txtWebExpDate'
+                , 'txtMobNo', 'txtEmailID'
             ].forEach(function (id) {
                 const el = document.getElementById(id);
                 if (el) el.disabled = true;
@@ -1065,8 +1205,7 @@ $("#spMapMark").show();
 
 
             addModal.show();
-        }
-
+        }        
         function validateAll() {
             let ok = true;
 
@@ -1074,11 +1213,24 @@ $("#spMapMark").show();
             if (!validateRequired('txtCustomerCode', 'err_CustCode', 'Customer Code')) ok = false;
             if (!validateRequired('txtCustomerName', 'err_CustName', 'Customer Name')) ok = false;
             if (!validateGSTIN()) ok = false;
+            if (!validateMobileNo()) ok = false;
+            if (!EmailValidation($("#txtEmailID"), "#err_EmailID", false)) {
+                showErr("err_EmailID", 'Email ID is required');
+                setError("txtEmailID");
+                ok = false;
+            } else {
+                hideErr("err_EmailID");
+                setValid("txtEmailID");
+            }
             if (!validateRequired('txtAMCDate', 'err_AMCDate', 'AMC Date')) ok = false;
             if (!validateRequired('txtRegisteredDate', 'err_RegDate', 'Registered Date')) ok = false;
 
             // Column 2
-            if (!validateRequired('txtExpDate', 'err_ExpDate', 'Expiry Date')) ok = false;
+            if (!validateRequired('txtExpDate', 'err_ExpDate', 'Expiry Date')) {
+                ok = false;
+            }
+            if (!validateRequired('txtWebExpDate', 'err_WebExpDate', 'Web Expiry Date')) ok = false;
+
             if (!validateRequired('txtVersion', 'err_Version', 'Version')) ok = false;
             if (!validateRadio('shineType', 'err_ShineType', 'Shine Type')) ok = false;
             if (!validateRadio('userType', 'err_UserType', 'User Type')) ok = false;
@@ -1086,7 +1238,7 @@ $("#spMapMark").show();
             // Column 3
             if (!validateNumberOnly('txtClients', 'err_NoofClients', 'No. of Clients')) ok = false;
             if (!validateNumberOnly('txtMobileApp', 'err_MobileApp', 'Mobile App')) ok = false;
-            if (!validateRequired('txtParentComp', 'err_CompCode', 'Parent Comp Code')) ok = false;
+            //if (!validateRequired('txtParentComp', 'err_CompCode', 'Parent Comp Code')) ok = false;
             if (!validateRequired('txtGeo', 'err_GeoLocation', 'Geo Location')) ok = false;
             if (!validateRequired('txtAddress', 'err_Address', 'Address')) ok = false;
 
@@ -1109,18 +1261,22 @@ $("#spMapMark").show();
             const btnClear = document.getElementById('btnClear');
             if (btnClear) {
                 btnClear.addEventListener('click', function () {
-
-                    ['txtCustomerCode', 'txtCustomerName', 'txtGSTIN', 'txtAMCDate',
-                        'txtRegisteredDate', 'txtExpDate', 'txtVersion', 'txtClients',
-                        'txtMobileApp', 'txtParentComp', 'txtGeo', 'txtAddress'
+                    
+                    
+                    ['txtCustomerCode', 'txtCustomerName', 'txtGSTIN', 'txtVersion',
+                        'txtParentComp', 'txtGeo', 'txtAddress', "txtEmailID", "txtMobNo"
                     ].forEach(function (id) {
                         const el = document.getElementById(id);
                         if (el) { el.value = ''; clearBorder(id); }
                     });
-
+                    //set default date
+                    setDefaultDate();
+                    //set default value
+                    document.getElementById("txtClients").value = 1;
+                    document.getElementById("txtMobileApp").value = 0;
                     // Clear radios
-                    document.querySelectorAll('input[name="shineType"], input[name="userType"]')
-                        .forEach(function (r) { r.checked = false; });
+                    document.querySelector('input[name="shineType"][value="Non FA"]').checked = true;
+                    document.querySelector('input[name="userType"][value="Single"]').checked = true;
 
                     // Clear file input
                     const fileEl = document.getElementById('txtFile');
@@ -1185,6 +1341,8 @@ $("#spMapMark").show();
 
             // Column 2
             attachBlur('txtExpDate', 'err_ExpDate', 'Expiry Date');
+            attachBlur('txtWebExpDate', 'err_WebExpDate', 'Web Expiry Date');
+
             attachBlur('txtVersion', 'err_Version', 'Version');
 
             // Column 3
@@ -1255,7 +1413,7 @@ $("#spMapMark").show();
                 async: false,
                 success: function (data) {
                     console.log("API Response:", data);
-                    console.log("Data length:", data.length); 
+                    console.log("Data length:", data.length);
                     if (data.length > 0) {
                         CustomerColumns = (data);
                         console.log("columns : ", CustomerColumns);
