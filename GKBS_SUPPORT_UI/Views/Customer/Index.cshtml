@@ -553,9 +553,14 @@
                             <div id="err_Address" class="error-msg">Address is required</div>
                             <!-- File -->
                             <div class="input-group-custom">
-                                <input type="file" id="txtFile" class="form-control-custom" placeholder="Attachment">
+                                <input type="file" id="txtFile" class="form-control-custom" placeholder="Attachment" multiple>
                                 <label class="labelup">Attachment</label>
                             </div>
+
+                            <div class="Table-Container" style="margin-top:10px;">
+                                <div id="grid-Attachment-lists"></div>
+                            </div>
+
                             <div class="mt-2">
                                 <input type="checkbox" id="chkActive"> Active
                             </div>
@@ -805,7 +810,7 @@ $("#spMapMark").show();
                 setError(inputId);
                 return false;
             }
-           
+
             return true;
         }
         function setDefaultDate() {
@@ -1070,6 +1075,7 @@ $("#spMapMark").show();
                     console.log("Save response:", res);
 
                     if (res && res.length > 0 && res[0].Status === "Success") {
+                        uploadAttachment(res[0].ID);
                         showSuccessSnackbar(res[0].Message);
 
                         addModal.hide();
@@ -1083,6 +1089,254 @@ $("#spMapMark").show();
                 error: function (xhr) {
                     showErrorSnackbar("Save failed:", xhr.status, xhr.responseText);
                     showErrorSnackbar("Error: " + xhr.responseText);
+                }
+            });
+        }
+
+        function uploadAttachment(customerID) {
+    const fileInput = document.getElementById('txtFile');
+    if (!fileInput || fileInput.files.length === 0) return; // no files? skip
+
+    // 5MB check
+    for (let i = 0; i < fileInput.files.length; i++) {
+        if (fileInput.files[i].size > 5 * 1024 * 1024) {
+            showErrorSnackbar(`${fileInput.files[i].name} exceeds 5MB limit!`);
+            return;
+        }
+    }
+
+    const formData = new FormData();
+    formData.append('CustomerID', customerID);
+    formData.append('UID', '@Session["LoginUserID"]');
+    for (let i = 0; i < fileInput.files.length; i++) {
+        formData.append('files', fileInput.files[i]);
+    }
+
+    $.ajax({
+        url: Aurl + "Customer/SaveAttachment",
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (res) {
+            if (res[0].Status === "Success") {
+                showSuccessSnackbar("Files uploaded successfully!");
+                loadAttachments(customerID);
+            } else {
+                showErrorSnackbar(res[0].Message);
+            }
+        },
+        error: function (xhr) {
+            showErrorSnackbar("Upload error: " + xhr.responseText);
+        }
+    });
+}
+
+        function loadAttachments(customerID) {
+            $.ajax({
+                url: Aurl + "Customer/GetAttachments",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ CustomerID: customerID }),
+                success: function (res) {
+                    // ✅ Format data before passing to grid
+                    const rowData = (res.success && res.files.length > 0) ? res.files.map(f => ({
+                        ID: f.ID,
+                        FileName: f.FileName,
+                        FileType: f.FileType.toUpperCase(),
+                        FileSize: f.FileSize >= 1024 * 1024
+                            ? (f.FileSize / (1024 * 1024)).toFixed(1) + ' MB'
+                            : (f.FileSize / 1024).toFixed(1) + ' KB',
+                        UploadedOn: new Date(f.UploadedOn).toLocaleDateString('en-IN', {
+                            day: '2-digit', month: 'short', year: 'numeric'
+                        })
+                    })) : [];
+
+
+                    const attachmentColumns = [
+                        {
+                            field: "FileName", header: "File Name", type: "label",
+                            width: 120, align: "left", visible: true,        // ✅ reduced
+                            EnableColumnMenu: false, ShowinColumnOption: true,
+                        },
+                        {
+                            field: "FileType", header: "Type", type: "label",
+                            width: 50, align: "left", visible: true,          // ✅ reduced
+                            EnableColumnMenu: false, ShowinColumnOption: true,
+                        },
+                        {
+                            field: "FileSize", header: "Size", type: "label",
+                            width: 70, align: "left", visible: true,          // ✅ reduced
+                            EnableColumnMenu: false, ShowinColumnOption: true,
+                        },
+                        {
+                            field: "UploadedOn", header: "Uploaded On", type: "label",
+                            width: 90, align: "left", visible: true,          // ✅ reduced
+                            EnableColumnMenu: false, ShowinColumnOption: true,
+                        },
+                        {
+                            field: "Action", header: "Action", type: "action",
+                            width: 80, align: "center", visible: true,
+                            specialColumn: true, ShowinColumnOption: false,
+                            EnableColumnMenu: false,
+                        }
+                    ];
+
+                    const attachmentActions = {
+                        "header": "Action",
+                        "type": "action",
+                        "width": 120,
+                        "align": "center",
+                        "visible": true,
+                        "specialColumn": true,
+                        "ShowinColumnOption": false,
+                        "actions": [
+                            {
+                                icon: '👁️',
+                                title: 'View',
+                                displayType: 'single_icon',
+                                handler: function (row) {
+                                    viewAttachment(row.ID, row.FileName, row.FileType);
+                                }
+                            },
+                            {
+                                icon: '⬇️',
+                                title: 'Download',
+                                displayType: 'single_icon',
+                                handler: function (row) {
+                                    downloadAttachment(row.ID, row.FileName);
+                                }
+                            },
+                            {
+                                icon: '🗑️',
+                                title: 'Delete',
+                                displayType: 'single_icon',
+                                handler: function (row) {
+                                    deleteAttachment(row.ID);
+                                }
+                            }
+                        ]
+                    };
+
+                    new GKBSDynamicGrid('#grid-Attachment-lists', attachmentColumns, rowData, {
+                        enablePagination: false,
+                        enableSearch: false,
+                        enableExport: false,
+                        enablePrint: false,
+                        enableColumnsBtn: false,
+                        enableAddRow: false,
+                        enableRemoveRow: false,
+                        enableSorting: false,
+                        height: "150px",
+                        singleIconAction: attachmentActions.actions
+                    });
+                },
+                error: function (xhr) {
+                    showErrorSnackbar("Load error: " + xhr.responseText);
+                }
+            });
+        }
+
+        function downloadAttachment(id, fileName) {
+            $.ajax({
+                url: Aurl + "Customer/DownloadAttachment",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ ID: id }),
+                xhrFields: { responseType: 'blob' },
+                success: function (data) {
+                    const url = URL.createObjectURL(data);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                },
+                error: function (xhr) {
+                    showErrorSnackbar("Download failed!");
+                }
+            });
+        }
+
+        function deleteAttachment(id) {
+            if (!confirm("Are you sure you want to delete this file?")) return;
+            const customerID = document.getElementById('hdnCustomerID').value;
+            $.ajax({
+                url: Aurl + "Customer/DeleteAttachment",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ ID: id }),
+                success: function (res) {
+                    if (res.success) {
+                        showSuccessSnackbar("File deleted!");
+                        loadAttachments(customerID);
+                    } else {
+                        showErrorSnackbar(res.message);
+                    }
+                },
+                error: function (xhr) {
+                    showErrorSnackbar("Delete failed!");
+                }
+            });
+        }
+
+        @*function editAttachment(id, fileName) {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '*/*';
+
+    fileInput.onchange = function () {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            showErrorSnackbar(`${file.name} exceeds 5MB limit!`);
+            return;
+        }
+
+        const customerID = document.getElementById('hdnCustomerID').value;
+        const formData = new FormData();
+        formData.append('ID', id);
+        formData.append('CustomerID', customerID);
+        formData.append('UID', '@Session["LoginUserID"]');
+        formData.append('files', file);
+
+        $.ajax({
+            url: Aurl + "Customer/EditAttachment",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res[0].Status === "Success") {
+                    showSuccessSnackbar("File updated successfully!");
+                    loadAttachments(customerID);
+                } else {
+                    showErrorSnackbar(res[0].Message);
+                }
+            },
+            error: function (xhr) {
+                showErrorSnackbar("Edit failed: " + xhr.responseText);
+            }
+        });
+    };
+
+    fileInput.click();
+}*@
+
+        function viewAttachment(id, fileName, fileType) {
+            $.ajax({
+                url: Aurl + "Customer/DownloadAttachment",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ ID: id }),
+                xhrFields: { responseType: 'blob' },
+                success: function (data) {
+                    const url = URL.createObjectURL(data);
+                    window.open(url, '_blank'); // ✅ opens in new tab for preview
+                },
+                error: function (xhr) {
+                    showErrorSnackbar("View failed!");
                 }
             });
         }
@@ -1137,6 +1391,7 @@ $("#spMapMark").show();
 
             // 7. Update modal title
             document.querySelector('.modal-title').textContent = 'Edit Customer';
+            loadAttachments(row.ID);
 
             // 8. Open modal
             addModal.show();
@@ -1202,10 +1457,10 @@ $("#spMapMark").show();
             document.getElementById('btnSave').style.display = 'none';
             document.getElementById('btnClear').style.display = 'none';
             document.getElementById('btnClose').style.display = 'block';
-
+            loadAttachments(row.ID);
 
             addModal.show();
-        }        
+        }
         function validateAll() {
             let ok = true;
 
@@ -1261,8 +1516,8 @@ $("#spMapMark").show();
             const btnClear = document.getElementById('btnClear');
             if (btnClear) {
                 btnClear.addEventListener('click', function () {
-                    
-                    
+
+
                     ['txtCustomerCode', 'txtCustomerName', 'txtGSTIN', 'txtVersion',
                         'txtParentComp', 'txtGeo', 'txtAddress', "txtEmailID", "txtMobNo"
                     ].forEach(function (id) {
