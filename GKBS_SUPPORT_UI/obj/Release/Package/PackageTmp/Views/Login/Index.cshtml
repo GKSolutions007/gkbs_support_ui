@@ -651,7 +651,7 @@ function Login() {
             $("#loadingDiv").remove(); 
             if (response && response.length > 0) {
                 var user = response[0];                
-                window.location.href = 'ValidatePermission?ID=' + user.ID;
+                window.location.href = url + 'ValidatePermission?ID=' + user.ID;
                 @*if (user.ID) {
                     sessionStorage.setItem("userName", user.UserName);
                     sessionStorage.setItem("userID", user.ID);

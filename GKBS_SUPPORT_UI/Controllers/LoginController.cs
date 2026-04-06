@@ -16,7 +16,7 @@ namespace GKBS_SUPPORT_UI.Controllers
             Session["APIurl"] = APIurl;
             string url = HttpContext.Request.Url.AbsoluteUri.ToString();
             char IsSlash = url[url.Length - 1];
-            //string addslahinlast = IsSlash == '/' ? url : url + "/";
+            string addslahinlast = IsSlash == '/' ? url : url + "/";
             Session["url"] = IsSlash == '/' ? url : url + "/";
             return View();
         }
