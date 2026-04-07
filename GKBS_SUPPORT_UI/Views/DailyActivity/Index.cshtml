@@ -339,9 +339,11 @@
                         <div class="mt-4">
                             <label class="small fw-bold">Attachments</label>
                             <div class="d-flex align-items-center gap-2 mt-1">
-                                <input type="file" id="fupAttachments" class="form-control form-control-sm" multiple>
+                                <input type="file" id="fupAttachments" class="form-control form-control-sm"
+                                       multiple onchange="previewDailyActivityFiles(this)">
                             </div>
-                            <a href="#" class="text-decoration-none small mt-2 d-block">View Uploaded Files</a>
+                            <!-- Attachment Grid -->
+                            <div id="grid-DailyActivity-Attachments" style="margin-top:8px;"></div>
                         </div>
 
                         <input type="hidden" id="txtToDoID" value="0" />
@@ -366,6 +368,7 @@
         const Aurl = '@Session["APIurl"]';
         const userId = '@Session["LoginUserID"]';
         let loadedCaseOrgID = null;
+        let currentDailyActivityID = 0;
 
         const urlParams = new URLSearchParams(window.location.search);
         const paramTaskId = urlParams.get('taskId');
@@ -378,6 +381,10 @@
 
 
         $(document).ready(function () {
+            $('#frmDailyActivity').on('submit', function (e) {
+                e.preventDefault();
+                return false;
+            });
             loadCustomerDropdown();
             loadUserDropdown();
             loadMasterDropdown('Mode',          '#txtMode',          'Select Mode');
@@ -385,6 +392,7 @@
             loadMasterDropdown('SupportThrough','#txtSupportThrough','Select Support Channel');
             loadMasterDropdown('Action',        '#txtAction',        'Select Action');
             loadNewCaseNo();
+            renderDailyActivityAttachmentGrid([]);
 
 
             loadCustomerDropdown(function () {
@@ -432,6 +440,7 @@
                 contentType: "application/json",
                 data: JSON.stringify({ id: 1 }),
                 success: function (res) {
+                    console.log("the case no: ", res)
                     if (res.success && res.data) {
                         $('#txtCaseNo').val(res.data);
                     }
@@ -520,6 +529,9 @@
                         const d = res.data;
                         console.log("SQL Data Received:", d);
                         loadedCaseOrgID = d.ID || null;
+                        currentDailyActivityID = d.ID || 0;
+                        loadDailyActivityAttachments(d.ID);
+                        showSuccessSnackbar("Case " + d.ID + " loaded.");
 
                         $('#txtCallBy').val(d.Callby);
                         $('#txtMobileNo').val(d.FromMobNo);
@@ -607,6 +619,8 @@
                     if (res.success && res.data) {
                         const d = res.data;
                         console.log("InProgress Fetching Values: ", d);
+                        loadDailyActivityAttachments(d.ID);
+                        showSuccessSnackbar("In-progress case loaded.")
 
                         // Switch to Exist mode
                         $('input[name="caseType"][value="Exist"]').prop('checked', true);
@@ -614,6 +628,7 @@
 
                         // Store OrgID
                         loadedCaseOrgID = d.ID || parseInt(orgId);
+                        currentDailyActivityID = d.ID || parseInt(orgId);
 
                         // Fill all fields
                         $('#txtCustomerID').val(d.CustomerID).trigger('change');
@@ -648,6 +663,213 @@
                 error: function (xhr) { console.error("Error loading in-progress:", xhr.statusText); }
             });
         }
+
+
+        // ── Render attachment grid ──
+        function renderDailyActivityAttachmentGrid(rowData) {
+            const columns = [
+                { field: "FileName", header: "File Name", type: "label", width: 120, align: "left", visible: true, EnableColumnMenu: false, ShowinColumnOption: true },
+                { field: "FileType", header: "Type", type: "label", width: 50, align: "left", visible: true, EnableColumnMenu: false, ShowinColumnOption: true },
+                { field: "FileSize", header: "Size", type: "label", width: 70, align: "left", visible: true, EnableColumnMenu: false, ShowinColumnOption: true },
+                { field: "UploadedOn", header: "Uploaded On", type: "label", width: 90, align: "left", visible: true, EnableColumnMenu: false, ShowinColumnOption: true },
+                { field: "Action", header: "Action", type: "action", width: 80, align: "center", visible: true, specialColumn: true, ShowinColumnOption: false, EnableColumnMenu: false }
+            ];
+
+            // ✅ Clear the old grid completely before re-rendering
+            $('#grid-DailyActivity-Attachments').empty();
+
+            new GKBSDynamicGrid('#grid-DailyActivity-Attachments', columns, rowData, {
+                enablePagination: false,
+                enableSearch: false,
+                enableExport: false,
+                enablePrint: false,
+                enableColumnsBtn: false,
+                enableAddRow: false,
+                enableRemoveRow: false,
+                enableSorting: false,
+                height: "150px",
+                singleIconAction: [
+                    {
+                        icon: '👁️', title: 'View', displayType: 'single_icon',
+                        handler: function (row) {
+                            console.log("View clicked, row:", row); // ✅ debug line
+                            if (row.ID && row.ID > 0) {
+                                viewDailyActivityAttachment(row.ID);
+                            } else {
+                                showErrorSnackbar('Please save the record first to view attachments!');
+                            }
+                        }
+                    },
+                    {
+                        icon: '⬇️', title: 'Download', displayType: 'single_icon',
+                        handler: function (row) {
+                            console.log("Download clicked, row:", row); // ✅ debug line
+                            if (row.ID && row.ID > 0) {
+                                downloadDailyActivityAttachment(row.ID, row.FileName);
+                            } else {
+                                showErrorSnackbar('Please save the record first to download attachments!');
+                            }
+                        }
+                    },
+                    {
+                        icon: '🗑️', title: 'Delete', displayType: 'single_icon',
+                        handler: function (row) {
+                            if (row.ID && row.ID > 0) {
+                                deleteDailyActivityAttachment(row.ID);
+                            } else {
+                                // Remove unsaved file from input
+                                const fi = document.getElementById('fupAttachments');
+                                const dt = new DataTransfer();
+                                Array.from(fi.files).forEach(f => {
+                                    if (f.name !== row.FileName) dt.items.add(f);
+                                });
+                                fi.files = dt.files;
+                                previewDailyActivityFiles(fi);
+                            }
+                        }
+                    }
+                ]
+            });
+        }
+
+        // ── Preview files before save ──
+        function previewDailyActivityFiles(input) {
+            const files = Array.from(input.files);
+
+            const gridEl = document.querySelector('#grid-DailyActivity-Attachments');
+            const gi = gridEl ? gridEl._gkbsGrid : null;
+            const existingRows = gi ? gi.originalData.filter(r => r.ID > 0) : [];
+
+            const newRows = files.map(file => ({
+                ID: 0,
+                FileName: file.name,
+                FileType: file.name.split('.').pop().toUpperCase(),
+                FileSize: file.size >= 1024 * 1024
+                    ? (file.size / (1024 * 1024)).toFixed(1) + ' MB'
+                    : (file.size / 1024).toFixed(1) + ' KB',
+                UploadedOn: 'Pending...'
+            }));
+
+            renderDailyActivityAttachmentGrid([...existingRows, ...newRows]);
+        }
+
+        // ── Load saved attachments from DB by CaseNo ──
+        function loadDailyActivityAttachments(dailyActivityID) {
+            $.ajax({
+                url: Aurl + "Transaction/GetAttachments",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ DailyActivityID: dailyActivityID }),
+                success: function (res) {
+                    const rowData = (res.success && res.files.length > 0)
+                        ? res.files.map(f => ({
+                            ID: f.ID,
+                            FileName: f.FileName,
+                            FileType: f.FileType.toUpperCase(),
+                            FileSize: f.FileSize >= 1024 * 1024
+                                ? (f.FileSize / (1024 * 1024)).toFixed(1) + ' MB'
+                                : (f.FileSize / 1024).toFixed(1) + ' KB',
+                            UploadedOn: new Date(f.UploadedOn).toLocaleDateString('en-IN', {
+                                day: '2-digit', month: 'short', year: 'numeric'
+                            })
+                        }))
+                        : [];
+                    renderDailyActivityAttachmentGrid(rowData);
+                },
+                error: function () { showErrorSnackbar("Failed to load attachments."); }
+            });
+        }
+
+        // ── Upload after save ──
+        function uploadDailyActivityAttachment(caseNo, dailyActivityID) {
+            const fi = document.getElementById('fupAttachments');
+            if (!fi || fi.files.length === 0) return;
+
+            for (let i = 0; i < fi.files.length; i++) {
+                if (fi.files[i].size > 5 * 1024 * 1024) {
+                    showErrorSnackbar(`${fi.files[i].name} exceeds 5MB limit!`);
+                    return;
+                }
+            }
+
+            const formData = new FormData();
+            formData.append('CaseNo', caseNo);
+            formData.append('DailyActivityID', dailyActivityID);
+            formData.append('UID', userId);
+            for (let i = 0; i < fi.files.length; i++) {
+                formData.append('files', fi.files[i]);
+            }
+
+            $.ajax({
+                url: Aurl + "Transaction/SaveAttachment",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    if (res[0].Status === "Success") {
+                        showSuccessSnackbar("Files uploaded!");
+                        renderDailyActivityAttachmentGrid([]);
+                        fi.value = ''; // clear file input
+                    } else {
+                        showErrorSnackbar(res[0].Message);
+                    }
+                },
+                error: function (xhr) { showErrorSnackbar("Upload error: " + xhr.responseText); }
+            });
+        }
+
+        function viewDailyActivityAttachment(id) {
+            console.log("Viewing attachment ID:", id);
+            $.ajax({
+                url: Aurl + "Transaction/DownloadAttachment",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ ID: id }),
+                xhrFields: { responseType: 'blob' },
+                success: function (data) { window.open(URL.createObjectURL(data), '_blank'); },
+                error: function () { showErrorSnackbar("View failed!"); }
+            });
+        }
+
+        function downloadDailyActivityAttachment(id, fileName) {
+            console.log("Downloading attachment ID:", id, "Name:", fileName); 
+            $.ajax({
+                url: Aurl + "Transaction/DownloadAttachment",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ ID: id }),
+                xhrFields: { responseType: 'blob' },
+                success: function (data) {
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(data);
+                    a.download = fileName;
+                    a.click();
+                },
+                error: function () { showErrorSnackbar("Download failed!"); }
+            });
+        }
+
+        function deleteDailyActivityAttachment(id) {
+            if (!confirm("Delete this file?")) return;
+            const caseNo = $('#txtCaseNo').val();
+            $.ajax({
+                url: Aurl + "Transaction/DeleteAttachment",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ ID: id }),
+                success: function (res) {
+                    if (res.success) {
+                        showSuccessSnackbar("Deleted!");
+                        loadDailyActivityAttachments(currentDailyActivityID);
+                    }
+                    else showErrorSnackbar(res.message);
+                },
+                error: function () { showErrorSnackbar("Delete failed!"); }
+            });
+        }
+
+
 
         function toggleError(elementId, isValid, msg = "") {
             const $el = $('#' + elementId);
@@ -750,7 +972,12 @@
                 data: JSON.stringify(payload),
                 success: function (res) {
                     if (res.success) {
-                        showSuccessSnackbar("Daily Activity saved. ID: " + res.newID);
+                        const savedCaseNo = $('#txtCaseNo').val();
+                        const savedID = res.newID;
+
+                        uploadDailyActivityAttachment(savedCaseNo, savedID);
+                        showSuccessSnackbar("Daily Activity saved. ID: " + savedID);
+                        currentDailyActivityID = res.newID;
                         clearForm();
                     } else {
                         showErrorSnackbar(res.message);
@@ -764,7 +991,10 @@
 
         function clearForm() {
             loadedCaseOrgID = null;
+            currentDailyActivityID = 0;
             $('#frmDailyActivity')[0].reset();
+            $('#fupAttachments').val(''); // 2. Clear the actual file input
+            renderDailyActivityAttachmentGrid([]);
             $('input[name="caseType"][value="New"]').prop('checked', true);
             $('input[name="contactType"][value="Mobile"]').prop('checked', true);
             $('#txtActivityDate').val('');

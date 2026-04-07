@@ -390,7 +390,7 @@
     </div>
 
     <div class="modal fade" id="addUserModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-md">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
 
                 <!-- HEADER -->
@@ -432,8 +432,14 @@
 
                             <!-- File -->
                             <div class="input-group-custom">
-                                <input type="file" id="txtFile" class="form-control-custom" placeholder="Attachment">
+                                <input type="file" id="txtFile" class="form-control-custom"
+                                       multiple onchange="previewUserSelectedFiles(this)">
                                 <label class="labelup">Attachments</label>
+                            </div>
+
+                            <!-- Attachment Grid -->
+                            <div class="Table-Container" style="margin-top:10px;">
+                                <div id="grid-UserAttachment-lists"></div>
                             </div>
 
                         </div>
@@ -528,6 +534,8 @@
             // Show buttons back
             document.getElementById('btnSave').style.display = 'block';
             document.getElementById('btnClear').style.display = 'block';
+            document.getElementById('txtFile').value = '';
+            renderUserAttachmentGrid([])
 
             addModal.hide();
         });
@@ -538,7 +546,7 @@
                 title: 'Edit',
                 displayType: 'single_icon',
                 handler: function (row) {
-                    openEditModal(row);
+                    fetchAndOpenUserModal(row.ID, 'edit');
                 }
             },
             {
@@ -546,7 +554,7 @@
                 title: 'View',
                 displayType: 'single_icon',
                 handler: function (row) {
-                    openViewModal(row);
+                    fetchAndOpenUserModal(row.ID, 'view');
                 }
             }
         ];
@@ -569,7 +577,8 @@
         GetColumnSettingsData(2, 4, 1);
 
             $(document).ready(function () {
-                    loadDashboardGrid(1002, 1, '#grid-Users-lists', "uspgetuserslist", "", UserColumns);
+                loadDashboardGrid(1002, 1, '#grid-Users-lists', "uspgetuserslist", "", UserColumns);
+
     });
 
     function loadDashboardGrid(reportId, tableId, selector, apiEndpoint, headings, columns) {
@@ -605,12 +614,13 @@
                             const chkActive = document.getElementById('chkActive');
                             chkActive.checked = true;
                             chkActive.disabled = true;
+                            loadUserAttachmentsEmpty();
                             addModal.show();
                         }
                     }
                 ],
                 singleIconAction: singleIconAction, // Pass the single View action
-                rowActionsMenu: menuActions, 
+                rowActionsMenu: menuActions,
                 customCellRenderer: (el, col, rowData) => {
                     if (col.field === 'Active') {
                         const val = rowData[col.field];
@@ -648,7 +658,7 @@
                 EMailID: document.getElementById('forgotEmail').value.trim(),
                 EmployeeNo: document.getElementById('txtEmpNo').value.trim(),
                 Active: document.getElementById('chkActive').checked ? "1" : "0",
-                CBy: userId 
+                CBy: userId
             };
 
             $.ajax({
@@ -658,6 +668,7 @@
                 data: JSON.stringify(payload),
                 success: function (res) {
                     if (res && res.length > 0 && res[0].Status === "Success") {
+                        uploadUserAttachment(res[0].ID);
                         showSuccessSnackbar(res[0].Message);
                         addModal.hide();
                         document.getElementById('btnClear').click();
@@ -673,53 +684,261 @@
         }
 
 
-        function openEditModal(row) {
-            document.getElementById('hdnCustomerID').value = row.ID;
-            document.getElementById('txtUserID').value = row.UserID || '';
-            document.getElementById('txtUserName').value = row.UserName || '';
-            document.getElementById('Signuppassword').value = row.Password || '';
-            document.getElementById('SignupConfirmpassword').value = row.Password || '';
-            document.getElementById('SignupMobNo').value = row.Mobilenumber || '';
-            document.getElementById('forgotEmail').value = row.EMailID || '';
-            document.getElementById('txtEmpNo').value = row.EmployeeNo || '';
+        function fetchAndOpenUserModal(id, mode) {
+            $.ajax({
+                url: Aurl + "Users/GetUserByID",
+                type: "GET",
+                data: { ID: id },
+                success: function (res) {
+                    if (!res.success) {
+                        showErrorSnackbar(res.message || "Failed to load user.");
+                        return;
+                    }
 
-            const chkActive = document.getElementById('chkActive');
-            chkActive.checked = row.Active === 'True' || row.Active === '1';
-            chkActive.disabled = false;
+                    const row = res.user;
 
-            document.querySelector('.modal-title').textContent = 'Edit User';
-            document.getElementById('btnSave').style.display = 'block';
-            document.getElementById('btnClear').style.display = 'block';
-            addModal.show();
-        }
+                    // ── Populate all fields ──
+                    document.getElementById('hdnCustomerID').value = row.ID;
+                    document.getElementById('txtUserID').value = row.UserID || '';
+                    document.getElementById('txtUserName').value = row.UserName || '';
+                    document.getElementById('Signuppassword').value = row.Password || '';
+                    document.getElementById('SignupConfirmpassword').value = row.Password || '';
+                    document.getElementById('SignupMobNo').value = row.Mobilenumber || '';
+                    document.getElementById('forgotEmail').value = row.EMailID || '';
+                    document.getElementById('txtEmpNo').value = row.EmployeeNo || '';
 
-        // ── View Modal ──
-        function openViewModal(row) {
-            document.getElementById('hdnCustomerID').value = row.ID;
-            document.getElementById('txtUserID').value = row.UserID || '';
-            document.getElementById('txtUserName').value = row.UserName || '';
-            document.getElementById('Signuppassword').value = row.Password || '';
-            document.getElementById('SignupConfirmpassword').value = row.Password || '';
-            document.getElementById('SignupMobNo').value = row.Mobilenumber || '';
-            document.getElementById('forgotEmail').value = row.EMailID || '';
-            document.getElementById('txtEmpNo').value = row.EmployeeNo || '';
+                    const chkActive = document.getElementById('chkActive');
+                    chkActive.checked = (row.Active === '1' || row.Active === 'True');
 
-            const chkActive = document.getElementById('chkActive');
-            chkActive.checked = row.Active === 'True' || row.Active === '1';
-            chkActive.disabled = true;
+                    const allFields = [
+                        'txtUserID', 'txtUserName', 'Signuppassword',
+                        'SignupConfirmpassword', 'SignupMobNo', 'forgotEmail', 'txtEmpNo'
+                    ];
 
-            ['txtUserID', 'txtUserName', 'Signuppassword', 'SignupConfirmpassword',
-                'SignupMobNo', 'forgotEmail', 'txtEmpNo'
-            ].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.disabled = true;
+                    if (mode === 'edit') {
+                        allFields.forEach(id => {
+                            const el = document.getElementById(id);
+                            if (el) el.disabled = false;
+                        });
+                        chkActive.disabled = false;
+
+                        document.querySelector('.modal-title').textContent = 'Edit User';
+                        document.getElementById('btnSave').style.display = 'block';
+                        document.getElementById('btnClear').style.display = 'block';
+                        loadUserAttachments(row.ID);
+
+                    } else if (mode === 'view') {
+                        allFields.forEach(id => {
+                            const el = document.getElementById(id);
+                            if (el) el.disabled = true;
+                        });
+                        chkActive.disabled = true;
+
+                        document.querySelector('.modal-title').textContent = 'View User';
+                        document.getElementById('btnSave').style.display = 'none';
+                        document.getElementById('btnClear').style.display = 'none';
+                        loadUserAttachments(row.ID);
+                    }
+
+                    addModal.show();
+                },
+                error: function (xhr) {
+                    showErrorSnackbar("Failed to load user: " + xhr.responseText);
+                }
             });
-
-            document.querySelector('.modal-title').textContent = 'View User';
-            document.getElementById('btnSave').style.display = 'none';
-            document.getElementById('btnClear').style.display = 'none';
-            addModal.show();
         }
+
+
+        // ── Load attachment grid (saved files from DB) ──
+function loadUserAttachments(userID) {
+    $.ajax({
+        url: Aurl + "Users/GetAttachments",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ UserID: userID }),
+        success: function (res) {
+            const rowData = (res.success && res.files.length > 0)
+                ? res.files.map(f => ({
+                    ID: f.ID,
+                    FileName: f.FileName,
+                    FileType: f.FileType.toUpperCase(),
+                    FileSize: f.FileSize >= 1024 * 1024
+                        ? (f.FileSize / (1024 * 1024)).toFixed(1) + ' MB'
+                        : (f.FileSize / 1024).toFixed(1) + ' KB',
+                    UploadedOn: new Date(f.UploadedOn).toLocaleDateString('en-IN', {
+                        day: '2-digit', month: 'short', year: 'numeric'
+                    })
+                }))
+                : [];
+            renderUserAttachmentGrid(rowData);
+        },
+        error: function () { showErrorSnackbar("Failed to load attachments."); }
+    });
+}
+
+// ── Empty grid on Add New ──
+function loadUserAttachmentsEmpty() {
+    renderUserAttachmentGrid([]);
+}
+
+// ── Render the attachment grid ──
+function renderUserAttachmentGrid(rowData) {
+    const columns = [
+        { field: "FileName",   header: "File Name",    type: "label", width: 120, align: "left",   visible: true, EnableColumnMenu: false, ShowinColumnOption: true },
+        { field: "FileType",   header: "Type",         type: "label", width: 50,  align: "left",   visible: true, EnableColumnMenu: false, ShowinColumnOption: true },
+        { field: "FileSize",   header: "Size",         type: "label", width: 70,  align: "left",   visible: true, EnableColumnMenu: false, ShowinColumnOption: true },
+        { field: "UploadedOn", header: "Uploaded On",  type: "label", width: 90,  align: "left",   visible: true, EnableColumnMenu: false, ShowinColumnOption: true },
+        { field: "Action",     header: "Action",       type: "action",width: 80,  align: "center", visible: true, specialColumn: true, ShowinColumnOption: false, EnableColumnMenu: false }
+    ];
+
+    new GKBSDynamicGrid('#grid-UserAttachment-lists', columns, rowData, {
+        enablePagination: false,
+        enableSearch:     false,
+        enableExport:     false,
+        enablePrint:      false,
+        enableColumnsBtn: false,
+        enableAddRow:     false,
+        enableRemoveRow:  false,
+        enableSorting:    false,
+        height: "150px",
+        singleIconAction: [
+            {
+                icon: '👁️', title: 'View', displayType: 'single_icon',
+                handler: function (row) {
+                    if (row.ID > 0) viewUserAttachment(row.ID);
+                    else showErrorSnackbar('Save first to view!');
+                }
+            },
+            {
+                icon: '⬇️', title: 'Download', displayType: 'single_icon',
+                handler: function (row) {
+                    if (row.ID > 0) downloadUserAttachment(row.ID, row.FileName);
+                    else showErrorSnackbar('Save first to download!');
+                }
+            },
+            {
+                icon: '🗑️', title: 'Delete', displayType: 'single_icon',
+                handler: function (row) {
+                    if (row.ID > 0) {
+                        deleteUserAttachment(row.ID);
+                    } else {
+                        // Remove from file input preview
+                        const fileInput = document.getElementById('txtFile');
+                        const dt = new DataTransfer();
+                        Array.from(fileInput.files).forEach(f => {
+                            if (f.name !== row.FileName) dt.items.add(f);
+                        });
+                        fileInput.files = dt.files;
+                        previewUserSelectedFiles(fileInput);
+                    }
+                }
+            }
+        ]
+    });
+}
+
+// ── Preview before save ──
+function previewUserSelectedFiles(input) {
+    const files = Array.from(input.files);
+
+    const gridEl = document.querySelector('#grid-UserAttachment-lists');
+    const gi = gridEl ? gridEl._gkbsGrid : null;
+    const existingRows = gi ? gi.originalData.filter(r => r.ID > 0) : [];
+
+    const newRows = files.map(file => ({
+        ID: 0,
+        FileName: file.name,
+        FileType: file.name.split('.').pop().toUpperCase(),
+        FileSize: file.size >= 1024 * 1024
+            ? (file.size / (1024 * 1024)).toFixed(1) + ' MB'
+            : (file.size / 1024).toFixed(1) + ' KB',
+        UploadedOn: 'Pending...'
+    }));
+
+    renderUserAttachmentGrid([...existingRows, ...newRows]);
+}
+
+// ── Upload after save ──
+function uploadUserAttachment(userID) {
+    const fileInput = document.getElementById('txtFile');
+    if (!fileInput || fileInput.files.length === 0) return;
+
+    for (let i = 0; i < fileInput.files.length; i++) {
+        if (fileInput.files[i].size > 5 * 1024 * 1024) {
+            showErrorSnackbar(`${fileInput.files[i].name} exceeds 5MB limit!`);
+            return;
+        }
+    }
+
+    const formData = new FormData();
+    formData.append('UserID', userID);
+    formData.append('UID', '@Session["LoginUserID"]');
+    for (let i = 0; i < fileInput.files.length; i++) {
+        formData.append('files', fileInput.files[i]);
+    }
+
+    $.ajax({
+        url: Aurl + "Users/SaveAttachment",
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (res) {
+            if (res[0].Status === "Success") {
+                showSuccessSnackbar("Files uploaded!");
+                loadUserAttachments(userID);
+            } else {
+                showErrorSnackbar(res[0].Message);
+            }
+        },
+        error: function (xhr) { showErrorSnackbar("Upload error: " + xhr.responseText); }
+    });
+}
+
+function viewUserAttachment(id) {
+    $.ajax({
+        url: Aurl + "Users/DownloadAttachment",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ ID: id }),
+        xhrFields: { responseType: 'blob' },
+        success: function (data) { window.open(URL.createObjectURL(data), '_blank'); },
+        error: function () { showErrorSnackbar("View failed!"); }
+    });
+}
+
+function downloadUserAttachment(id, fileName) {
+    $.ajax({
+        url: Aurl + "Users/DownloadAttachment",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ ID: id }),
+        xhrFields: { responseType: 'blob' },
+        success: function (data) {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(data);
+            a.download = fileName;
+            a.click();
+        },
+        error: function () { showErrorSnackbar("Download failed!"); }
+    });
+}
+
+function deleteUserAttachment(id) {
+    if (!confirm("Delete this file?")) return;
+    const userID = document.getElementById('hdnCustomerID').value;
+    $.ajax({
+        url: Aurl + "Users/DeleteAttachment",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ ID: id }),
+        success: function (res) {
+            if (res.success) { showSuccessSnackbar("Deleted!"); loadUserAttachments(userID); }
+            else showErrorSnackbar(res.message);
+        },
+        error: function () { showErrorSnackbar("Delete failed!"); }
+    });
+}
 
         function showErr(errId, msg) {
             const el = document.getElementById(errId);
@@ -869,8 +1088,52 @@
                         el.value = '';
                     });
                     document.querySelectorAll('[id^="err_"]').forEach(el => el.style.display = 'none');
+
+                    document.getElementById('txtFile').value = '';
+                    renderUserAttachmentGrid([])
                 });
             }
+
+            // ✅ ADD THIS — auto-reset when modal closes (X button, Close button, Escape key)
+            const modal = document.getElementById('addUserModal');
+            if (modal) {
+                modal.addEventListener('hidden.bs.modal', function () {
+                    // Reset hidden ID
+                    document.getElementById('hdnCustomerID').value = '0';
+
+                    // Clear all fields
+                    ['txtUserID', 'txtUserName', 'Signuppassword', 'SignupConfirmpassword',
+                        'SignupMobNo', 'forgotEmail', 'txtEmpNo'].forEach(function (id) {
+                            const el = document.getElementById(id);
+                            if (el) {
+                                el.value = '';
+                                el.disabled = false;
+                                el.style.border = '1.5px solid #ced4da';
+                                el.style.boxShadow = 'none';
+                            }
+                        });
+
+                    // Reset checkbox
+                    const chkActive = document.getElementById('chkActive');
+                    chkActive.checked = true;
+                    chkActive.disabled = false;
+
+                    // Reset file input and attachment grid
+                    document.getElementById('txtFile').value = '';
+                    renderUserAttachmentGrid([]);
+
+                    // Reset modal title
+                    document.querySelector('.modal-title').textContent = 'Add User';
+
+                    // Show save/clear buttons
+                    document.getElementById('btnSave').style.display = 'block';
+                    document.getElementById('btnClear').style.display = 'block';
+
+                    // Hide all error messages
+                    document.querySelectorAll('[id^="err_"]').forEach(el => el.style.display = 'none');
+                });
+            }
+
         });
 
         function GetColumnSettingsData(nMode, nFormID, nTableID) {
