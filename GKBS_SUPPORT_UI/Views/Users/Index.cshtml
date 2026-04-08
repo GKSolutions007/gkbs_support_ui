@@ -645,6 +645,21 @@
 
         function save() {
             if (!validateAll()) return;
+            const fileInput = document.getElementById('txtFile');
+            console.log("File Input Found:", fileInput);
+            if (fileInput && fileInput.files.length > 0) {
+                console.log("Files detected:", fileInput.files.length);
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    console.log(`File ${i} size:`, fileInput.files[i].size);
+                    if (fileInput.files[i].size > 5 * 1024 * 1024) {
+                        console.log("STOPPING SAVE: File too big");
+                        showErrorSnackbar("Upload failed: files must be under 5MB.");
+                        return;
+                    }
+                }
+            } else {
+                console.log("No files selected or input not found");
+            }
 
             const userId = '@Session["LoginUserID"]';
             const ID = document.getElementById('hdnCustomerID').value;
