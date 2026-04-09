@@ -41,10 +41,21 @@
             font-size: 22px;
             font-weight: 600;
         }
+        #grid-Contact-lists .dg-search-input {
+            display: none !important;
+        }
 
+        #grid-Attachment-lists .dg-search-input {
+            display: none !important;
+        }
         .top-bar-right {
             display: flex;
             gap: 10px;
+        }
+
+        .modal-xl {
+            max-width: 92vw !important;
+            width: 92vw !important;
         }
 
         .btn-print {
@@ -404,7 +415,7 @@
                     <div class="row g-3">
 
                         <!-- 🔹 COLUMN 1 -->
-                        <div class="col-md-4">
+                        <div class="col-md-3">
 
                             <div class="input-group-custom">
                                 <i class="fa-solid fa-id-card"></i>
@@ -433,7 +444,7 @@
                                 <label class="labelup">Mobile No</label>
                             </div>
                             <div id="err_MobNo" class="error-msg">Mobile No is required</div>
-                            
+
                             <div class="input-group-custom">
                                 <i class="fa-solid fa-file"></i>
                                 <input type="email" id="txtEmailID" class="form-control-custom" placeholder="E-Mail ID">
@@ -452,7 +463,7 @@
                         </div>
 
                         <!-- 🔹 COLUMN 2 -->
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="row">
                                 <div class="col-6">
                                     <div class="input-group-custom">
@@ -534,7 +545,7 @@
                         </div>
 
                         <!-- 🔹 COLUMN 3 -->
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <!-- Geo -->
                             <div class="input-group-custom d-flex align-items-center">
                                 <input type="text" id="txtGeo" class="form-control-custom" placeholder="Geo Location" readonly>
@@ -551,9 +562,25 @@
                                 <label class="labelup">Address</label>
                             </div>
                             <div id="err_Address" class="error-msg">Address is required</div>
+
+                            <div style="margin-top:14px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                    <label style="font-size:11px; font-weight:600; color:#555;">Contact Info</label>
+                                    <button type="button" id="btnAddContact" onclick="addContactRow()"
+                                            style="background:#28a745; color:white; border:none; padding:3px 10px; border-radius:5px; font-size:12px; cursor:pointer;">
+                                        ➕ Add Contact
+                                    </button>
+                                </div>
+                                <div id="grid-Contact-lists"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+
                             <!-- File -->
                             <div class="input-group-custom">
-                                <input type="file" id="txtFile" class="form-control-custom" placeholder="Attachment" multiple>
+                                <input type="file" id="txtFile" class="form-control-custom" placeholder="Attachment" multiple
+                                       onchange="previewSelectedFiles(this)">
                                 <label class="labelup">Attachment</label>
                             </div>
 
@@ -567,9 +594,9 @@
 
                         </div>
 
-                    </div>
+                        </div>
 
-                </div>
+                    </div>
 
                 <!-- FOOTER -->
                 <div class="modal-footer">
@@ -631,10 +658,7 @@
                 title: 'Edit',
                 displayType: 'single_icon',
                 handler: function (row) {
-                    TransMode = 2;
-                    $("#spMapNavigate").hide();
-                    $("#spMapMark").show();
-                    openEditModal(row);
+                    fetchAndOpenModal(row.ID, 'edit');
                 }
             },
             {
@@ -642,11 +666,7 @@
                 title: 'View',
                 displayType: 'single_icon',
                 handler: function (row) {
-                    TransMode = 3;
-                    //$("#btnLocation").text("🗺️");
-                     $("#spMapNavigate").show();
- $("#spMapMark").hide();
-                    openViewModal(row);
+                    fetchAndOpenModal(row.ID, 'view');
                 }
             },
             {
@@ -654,10 +674,7 @@
                 title: 'Sync',
                 displayType: 'single_icon',
                 handler: function (row) {
-
-                    var CompCode = row.Customercode;
-                    SyncCompany(CompCode);
-
+                    SyncCompany(row.Customercode);
                 }
             }
         ];
@@ -727,6 +744,9 @@ $("#spMapMark").show();
                             chkActive.checked = true;
                             chkActive.disabled = true;
                             setDefaultDate();
+                            loadContactsWithData([]);
+                            loadAttachmentsEmpty();
+                            document.getElementById('btnAddContact').style.display = 'block';
                             addModal.show();
                         }
                     },
@@ -824,9 +844,22 @@ $("#spMapMark").show();
         }
         function formatDateForInput(dateVal) {
             if (!dateVal) return '';
-            const parts = dateVal.split(' ')[0].split('/');
+
+            // Handle new format: 01/Apr/2026
+            const months = {
+                'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+                'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+                'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+            };
+
+            const parts = dateVal.split('/');
             if (parts.length === 3) {
-                return parts[2] + '-' + parts[1] + '-' + parts[0];
+                const day = parts[0];
+                const month = months[parts[1]];
+                const year = parts[2];
+                if (day && month && year) {
+                    return year + '-' + month + '-' + day;
+                }
             }
 
             return '';
@@ -1061,7 +1094,7 @@ $("#spMapMark").show();
                 Address: document.getElementById('txtAddress').value.trim(),
                 Active: activeVal,
                 UID: userId,
-                ContactInfo: []
+                ContactInfo: getContactRows()
             };
 
             console.log("Saving payload:", payload);
@@ -1211,8 +1244,21 @@ $("#spMapMark").show();
                                 icon: '🗑️',
                                 title: 'Delete',
                                 displayType: 'single_icon',
+                                visible: function (row) {
+                                    return TransMode !== 3;
+                                },
                                 handler: function (row) {
-                                    deleteAttachment(row.ID);
+                                    if (row.ID > 0) {
+                                        deleteAttachment(row.ID);
+                                    } else {
+                                        const fileInput = document.getElementById('txtFile');
+                                        const dt = new DataTransfer();
+                                        Array.from(fileInput.files).forEach(f => {
+                                            if (f.name !== row.FileName) dt.items.add(f);
+                                        });
+                                        fileInput.files = dt.files;
+                                        previewSelectedFiles(fileInput);
+                                    }
                                 }
                             }
                         ]
@@ -1341,126 +1387,442 @@ $("#spMapMark").show();
             });
         }
 
-        function openEditModal(row) {
+        function loadAttachmentsEmpty() {
+            const attachmentColumns = [
+                {
+                    field: "FileName", header: "File Name", type: "label",
+                    width: 120, align: "left", visible: true,
+                    EnableColumnMenu: false, ShowinColumnOption: true,
+                },
+                {
+                    field: "FileType", header: "Type", type: "label",
+                    width: 50, align: "left", visible: true,
+                    EnableColumnMenu: false, ShowinColumnOption: true,
+                },
+                {
+                    field: "FileSize", header: "Size", type: "label",
+                    width: 70, align: "left", visible: true,
+                    EnableColumnMenu: false, ShowinColumnOption: true,
+                },
+                {
+                    field: "UploadedOn", header: "Uploaded On", type: "label",
+                    width: 90, align: "left", visible: true,
+                    EnableColumnMenu: false, ShowinColumnOption: true,
+                },
+                {
+                    field: "Action", header: "Action", type: "action",
+                    width: 80, align: "center", visible: true,
+                    specialColumn: true, ShowinColumnOption: false,
+                    EnableColumnMenu: false,
+                }
+            ];
 
-            document.getElementById('hdnCustomerID').value = row.ID;
-
-            // 2. Fill all fields
-            document.getElementById('txtCustomerCode').value = row.Customercode || '';
-            document.getElementById('txtCustomerName').value = row.Customername || '';
-                    document.getElementById('txtMobNo').value = row.MobileNo || '';
-            document.getElementById('txtEmailID').value = row.EmailID || '';
-
-            document.getElementById('txtGSTIN').value = row.GSTIN || '';
-            document.getElementById('txtAMCDate').value = formatDateForInput(row.AmcDate);
-            document.getElementById('txtRegisteredDate').value = formatDateForInput(row.RegisteredDate);
-            document.getElementById('txtExpDate').value = formatDateForInput(row.ExpDate);
-            document.getElementById('txtWebExpDate').value = formatDateForInput(row.WebExpDate);
-
-            document.getElementById('txtVersion').value = row.Version || '';
-            document.getElementById('txtClients').value = row.NoofClient || '';
-            document.getElementById('txtMobileApp').value = row.MobileApp || '';
-            document.getElementById('txtParentComp').value = row.ParentCompCode || '';
-            document.getElementById('txtAddress').value = row.Address || '';
-
-            // 3. Set Geo
-            if (row.Latitude && row.Longtitude) {
-                document.getElementById('txtGeo').value = row.Latitude + ', ' + row.Longtitude;
-            }
-
-            // 4. Set ShineType radio (1 = FA, 0 = Non FA)
-            document.querySelectorAll('input[name="shineType"]').forEach(r => r.checked = false);
-            if (row.ShineType === 'True') {   // 👈 was == '1'
-                document.querySelector('input[name="shineType"][value="FA"]').checked = true;
-            } else {
-                document.querySelector('input[name="shineType"][value="Non FA"]').checked = true;
-            }
-
-            // 5. Set UserType radio (1 = Single, 0 = Multi)
-            document.querySelectorAll('input[name="userType"]').forEach(r => r.checked = false);
-            if (row.Usertype === 'True') {    // 👈 was == '1'  (True = Single)
-                document.querySelector('input[name="userType"][value="Single"]').checked = true;
-            } else {
-                document.querySelector('input[name="userType"][value="Multi"]').checked = true;
-            }
-
-            // 6. Active checkbox — enable it in edit mode
-            const chkActive = document.getElementById('chkActive');
-            chkActive.checked = row.Active === 'True';
-            chkActive.disabled = false;  // 👈 editable in edit mode
-
-            // 7. Update modal title
-            document.querySelector('.modal-title').textContent = 'Edit Customer';
-            loadAttachments(row.ID);
-
-            // 8. Open modal
-            addModal.show();
-        }
-
-        function openViewModal(row) {
-            // 1. Fill all fields (same as edit)
-            document.getElementById('hdnCustomerID').value = row.ID;
-            document.getElementById('txtCustomerCode').value = row.Customercode || '';
-            document.getElementById('txtCustomerName').value = row.Customername || '';
-            document.getElementById('txtMobNo').value = row.MobileNo || '';
-            document.getElementById('txtEmailID').value = row.EmailID || '';
-            document.getElementById('txtGSTIN').value = row.GSTIN || '';
-            document.getElementById('txtAMCDate').value = formatDateForInput(row.AmcDate);
-            document.getElementById('txtRegisteredDate').value = formatDateForInput(row.RegisteredDate);
-            document.getElementById('txtExpDate').value = formatDateForInput(row.ExpDate);
-            document.getElementById('txtWebExpDate').value = formatDateForInput(row.WebExpDate);
-            document.getElementById('txtVersion').value = row.Version || '';
-            document.getElementById('txtClients').value = row.NoofClient || '';
-            document.getElementById('txtMobileApp').value = row.MobileApp || '';
-            document.getElementById('txtParentComp').value = row.ParentCompCode || '';
-            document.getElementById('txtAddress').value = row.Address || '';
-
-            if (row.Latitude && row.Longtitude) {
-                document.getElementById('txtGeo').value = row.Latitude + ', ' + row.Longtitude;
-            }
-
-            document.querySelectorAll('input[name="shineType"]').forEach(r => r.checked = false);
-            if (row.ShineTypeValue === 'FA') {
-                document.querySelector('input[name="shineType"][value="FA"]').checked = true;
-            } else {
-                document.querySelector('input[name="shineType"][value="Non FA"]').checked = true;
-            }
-
-            document.querySelectorAll('input[name="userType"]').forEach(r => r.checked = false);
-            if (row.UsertypeValue === 'Single User') {
-                document.querySelector('input[name="userType"][value="Single"]').checked = true;
-            } else {
-                document.querySelector('input[name="userType"][value="Multi"]').checked = true;
-            }
-
-            const chkActive = document.getElementById('chkActive');
-            chkActive.checked = row.Active === 'True';
-            chkActive.disabled = true;
-
-            ['txtCustomerCode', 'txtCustomerName', 'txtGSTIN', 'txtAMCDate',
-                'txtRegisteredDate', 'txtExpDate', 'txtVersion', 'txtClients',
-                'txtMobileApp', 'txtParentComp', 'txtAddress', 'txtGeo', 'txtWebExpDate'
-                , 'txtMobNo', 'txtEmailID'
-            ].forEach(function (id) {
-                const el = document.getElementById(id);
-                if (el) el.disabled = true;
+            new GKBSDynamicGrid('#grid-Attachment-lists', attachmentColumns, [], {
+                enablePagination: false,
+                enableSearch: false,
+                enableExport: false,
+                enablePrint: false,
+                enableColumnsBtn: false,
+                enableAddRow: false,
+                enableRemoveRow: false,
+                ReportName: "Contacts",
+                enableSorting: false,
+                height: "150px",
+                singleIconAction: [
+                    {
+                        icon: '👁️',
+                        title: 'View',
+                        displayType: 'single_icon',
+                        handler: function (row) {
+                            viewAttachment(row.ID, row.FileName, row.FileType);
+                        }
+                    },
+                    {
+                        icon: '⬇️',
+                        title: 'Download',
+                        displayType: 'single_icon',
+                        handler: function (row) {
+                            downloadAttachment(row.ID, row.FileName);
+                        }
+                    },
+                    {
+                        icon: '🗑️',
+                        title: 'Delete',
+                        displayType: 'single_icon',
+                        visible: function (row) {
+                            return TransMode !== 3;
+                        },
+                        handler: function (row) {
+                            if (row.ID > 0) {
+                                deleteAttachment(row.ID);
+                            } else {
+                                const fileInput = document.getElementById('txtFile');
+                                const dt = new DataTransfer();
+                                Array.from(fileInput.files).forEach(f => {
+                                    if (f.name !== row.FileName) dt.items.add(f);
+                                });
+                                fileInput.files = dt.files;
+                                previewSelectedFiles(fileInput);
+                            }
+                        }
+                    }
+                ]
             });
-
-
-            document.querySelectorAll('input[name="shineType"], input[name="userType"]')
-                .forEach(r => r.disabled = true);
-
-
-            document.querySelector('.modal-title').textContent = 'View Customer';
-
-
-            document.getElementById('btnSave').style.display = 'none';
-            document.getElementById('btnClear').style.display = 'none';
-            document.getElementById('btnClose').style.display = 'block';
-            loadAttachments(row.ID);
-
-            addModal.show();
         }
+
+        function addContactRow() {
+            const gridEl = document.querySelector('#grid-Contact-lists');
+            const gi = gridEl ? gridEl._gkbsGrid : null;
+            if (!gi) {
+                // grid not initialized yet — init with one blank row
+                loadContactsWithData([{ ContactID: 0, Name: '', MobileNo: '', Owner_Staff: '0' }]);
+                return;
+            }
+            // ✅ Save current data, add blank row, reload grid
+            const currentData = gi.originalData.map(r => ({
+                ContactID: r.ContactID || 0,
+                Name: r.Name || '',
+                MobileNo: r.MobileNo || '',
+                Owner_Staff: r.Owner_Staff || '0'
+            }));
+            currentData.push({ ContactID: 0, Name: '', MobileNo: '', Owner_Staff: '0' });
+            loadContactsWithData(currentData); // ✅ reinit with new data
+        }
+
+        function loadContactsWithData(data) {
+            const contactColumns = [
+                {
+                    field: "Name", header: "Name", type: "text",
+                    width: 120, align: "left", visible: true,
+                    EnableColumnMenu: false, ShowinColumnOption: true,
+                },
+                {
+                    field: "MobileNo", header: "Mobile No", type: "text",
+                    width: 100, align: "left", visible: true,
+                    EnableColumnMenu: false, ShowinColumnOption: true,
+                },
+                {
+                    field: "Owner_Staff", header: "Type", type: "dropdown",
+                    width: 80, align: "left", visible: true,
+                    EnableColumnMenu: false, ShowinColumnOption: true,
+                    options: [
+                        { value: '0', label: 'Owner' },
+                        { value: '1', label: 'Staff' }
+                    ]
+                },
+                {
+                    field: "Action", header: "", type: "action",
+                    width: 50, align: "center", visible: true,
+                    specialColumn: true, ShowinColumnOption: false,
+                    EnableColumnMenu: false,
+                }
+            ];
+
+            new GKBSDynamicGrid('#grid-Contact-lists', contactColumns, data, {
+                enablePagination: false,
+                enableSearch: false,   // ✅ no toolbar at all
+                enableExport: false,
+                enablePrint: false,
+                enableColumnsBtn: false,
+                enableAddRow: false,
+                enableRemoveRow: false,
+                enableSorting: false,
+                height: "150px",
+                onCellChange: function (field, value, row) {
+                    if (field === 'MobileNo') {
+                        const cleaned = value.replace(/\D/g, '');
+                        if (cleaned !== value) {
+                            row.MobileNo = cleaned;
+                            document.querySelectorAll('#grid-Contact-lists .dg-input').forEach(inp => {
+                                if (inp.value === value) inp.value = cleaned;
+                            });
+                        }
+                    }
+                },
+                singleIconAction: [
+                    {
+                        icon: '🗑️',
+                        title: 'Delete',
+                        displayType: 'single_icon',
+                        visible: function (row) {
+                            return TransMode !== 3;
+                        },
+                        handler: function (row) {
+                            const customerID = document.getElementById('hdnCustomerID').value;
+                            if (row.ContactID > 0) {
+                                deleteContact(row.ContactID, customerID);
+                            } else {
+                                const gridEl = document.querySelector('#grid-Contact-lists');
+                                const gi = gridEl ? gridEl._gkbsGrid : null;
+                                if (gi) {
+                                    gi.originalData = gi.originalData.filter(r => r !== row);
+                                    gi.processData();
+                                    gi.render();
+                                }
+                            }
+                        }
+                    }
+                ]
+            });
+        }
+
+        function getContactRows() {
+            const gridEl = document.querySelector('#grid-Contact-lists');
+            const gridInstance = gridEl ? gridEl._gkbsGrid : null;
+            if (!gridInstance) return [];
+            return gridInstance.originalData
+                .map(row => ({
+                    Name: row.Name || '',
+                    MobileNo: row.MobileNo || '',
+                    Owner_Staff: Number(row.Owner_Staff) || 0
+                }))
+                .filter(r => r.Name.trim() !== '');
+        }
+
+        function deleteContact(contactID, customerID) {
+            if (!confirm("Delete this contact?")) return;
+            $.ajax({
+                url: Aurl + "Customer/DeleteContact",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ ID: contactID }),
+                success: function (res) {
+                    if (res.success) {
+                        showSuccessSnackbar("Contact deleted!");
+                        loadContacts(customerID);
+                    } else {
+                        showErrorSnackbar(res.message);
+                    }
+                }
+            });
+        }
+
+        function loadContacts(customerID) {
+            $.ajax({
+                url: Aurl + "Customer/GetContacts",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ CustomerID: customerID }),
+                success: function (res) {
+                    const rowData = (res.success && res.contacts.length > 0) ? res.contacts : [];
+                    loadContactsWithData(rowData);
+                },
+                error: function (xhr) {
+                    showErrorSnackbar("Load contacts error: " + xhr.responseText);
+                }
+            });
+        }
+
+        function previewSelectedFiles(input) {
+            const files = Array.from(input.files);
+            if (files.length === 0) return;
+
+            const attachmentColumns = [
+                {
+                    field: "FileName", header: "File Name", type: "label",
+                    width: 120, align: "left", visible: true,
+                    EnableColumnMenu: false, ShowinColumnOption: true,
+                },
+                {
+                    field: "FileType", header: "Type", type: "label",
+                    width: 50, align: "left", visible: true,
+                    EnableColumnMenu: false, ShowinColumnOption: true,
+                },
+                {
+                    field: "FileSize", header: "Size", type: "label",
+                    width: 70, align: "left", visible: true,
+                    EnableColumnMenu: false, ShowinColumnOption: true,
+                },
+                {
+                    field: "UploadedOn", header: "Uploaded On", type: "label",
+                    width: 90, align: "left", visible: true,
+                    EnableColumnMenu: false, ShowinColumnOption: true,
+                },
+                {
+                    field: "Action", header: "Action", type: "action",
+                    width: 80, align: "center", visible: true,
+                    specialColumn: true, ShowinColumnOption: false,
+                    EnableColumnMenu: false,
+                }
+            ];
+
+            // ✅ Get existing saved rows from grid
+            const gridEl = document.querySelector('#grid-Attachment-lists');
+            const gridInstance = gridEl ? gridEl._gkbsGrid : null;
+            const existingRows = gridInstance ? gridInstance.originalData.filter(r => r.ID > 0) : [];
+
+            // ✅ Build preview rows from selected files
+            const newRows = files.map(file => ({
+                ID: 0,  // 0 = not yet saved
+                FileName: file.name,
+                FileType: file.name.split('.').pop().toUpperCase(),
+                FileSize: file.size >= 1024 * 1024
+                    ? (file.size / (1024 * 1024)).toFixed(1) + ' MB'
+                    : (file.size / 1024).toFixed(1) + ' KB',
+                UploadedOn: 'Pending...'
+            }));
+
+            // ✅ Combine existing saved + new preview rows
+            const allRows = [...existingRows, ...newRows];
+
+            new GKBSDynamicGrid('#grid-Attachment-lists', attachmentColumns, allRows, {
+                enablePagination: false,
+                enableSearch: false,
+                enableExport: false,
+                enablePrint: false,
+                enableColumnsBtn: false,
+                enableAddRow: false,
+                enableRemoveRow: false,
+                enableSorting: false,
+                height: "150px",
+                singleIconAction: [
+                    {
+                        icon: '👁️',
+                        title: 'View',
+                        displayType: 'single_icon',
+                        handler: function (row) {
+                            if (row.ID > 0) viewAttachment(row.ID, row.FileName, row.FileType);
+                            else showErrorSnackbar('Save first to view!');
+                        }
+                    },
+                    {
+                        icon: '⬇️',
+                        title: 'Download',
+                        displayType: 'single_icon',
+                        handler: function (row) {
+                            if (row.ID > 0) downloadAttachment(row.ID, row.FileName);
+                            else showErrorSnackbar('Save first to download!');
+                        }
+                    },
+                    {
+                        icon: '🗑️',
+                        title: 'Delete',
+                        displayType: 'single_icon',
+                        handler: function (row) {
+                            if (row.ID > 0) {
+                                deleteAttachment(row.ID);
+                            } else {
+                                // ✅ Remove from file input and grid
+                                const fileInput = document.getElementById('txtFile');
+                                const dt = new DataTransfer();
+                                Array.from(fileInput.files).forEach(f => {
+                                    if (f.name !== row.FileName) dt.items.add(f);
+                                });
+                                fileInput.files = dt.files;
+                                previewSelectedFiles(fileInput);
+                            }
+                        }
+                    }
+                ]
+            });
+        }
+
+        function fetchAndOpenModal(id, mode) {
+            $.ajax({
+                url: Aurl + "Customer/GetCustomerByID",
+                type: "GET",
+                data: { ID: id },
+                success: function (res) {
+                    if (!res.success) {
+                        showErrorSnackbar(res.message || "Failed to load customer.");
+                        return;
+                    }
+
+                    const row = res.customer;
+                    const contacts = res.contacts || [];
+
+                    // ── Populate all fields ──
+                    document.getElementById('hdnCustomerID').value = row.ID;
+                    document.getElementById('txtCustomerCode').value = row.Customercode || '';
+                    document.getElementById('txtCustomerName').value = row.Customername || '';
+                    document.getElementById('txtMobNo').value = row.MobileNo || '';
+                    document.getElementById('txtEmailID').value = row.EmailID || '';
+                    document.getElementById('txtGSTIN').value = row.GSTIN || '';
+                    document.getElementById('txtAMCDate').value = row.AmcDate;
+                    document.getElementById('txtRegisteredDate').value = row.RegisteredDate;
+                    document.getElementById('txtExpDate').value = row.ExpDate;
+                    document.getElementById('txtWebExpDate').value = row.WebExpDate;
+                    document.getElementById('txtVersion').value = row.Version || '';
+                    document.getElementById('txtClients').value = row.NoofClient || '';
+                    document.getElementById('txtMobileApp').value = row.MobileApp || '';
+                    document.getElementById('txtParentComp').value = row.ParentCompCode || '';
+                    document.getElementById('txtAddress').value = row.Address || '';
+
+                    if (row.Latitude && row.Longtitude) {
+                        document.getElementById('txtGeo').value = row.Latitude + ', ' + row.Longtitude;
+                    }
+
+                    // ShineType — DB stores as bit: 1=FA, 0=Non FA
+                    document.querySelectorAll('input[name="shineType"]').forEach(r => r.checked = false);
+                    document.querySelector(
+                        row.ShineType === '1'
+                            ? 'input[name="shineType"][value="FA"]'
+                            : 'input[name="shineType"][value="Non FA"]'
+                    ).checked = true;
+
+                    // UserType — DB stores as bit: 1=Single, 0=Multi
+                    document.querySelectorAll('input[name="userType"]').forEach(r => r.checked = false);
+                    document.querySelector(
+                        row.Usertype === '1'
+                            ? 'input[name="userType"][value="Single"]'
+                            : 'input[name="userType"][value="Multi"]'
+                    ).checked = true;
+
+                    // Active
+                    const chkActive = document.getElementById('chkActive');
+                    chkActive.checked = (row.Active === '1' || row.Active === 'True');
+
+                    // Load contacts and attachments from API (fresh data)
+                    loadContactsWithData(contacts);
+                    loadAttachments(row.ID);
+
+                    // ── MODE SPECIFIC ──
+                    const allFields = [
+                        'txtCustomerCode', 'txtCustomerName', 'txtGSTIN', 'txtAMCDate',
+                        'txtRegisteredDate', 'txtExpDate', 'txtVersion', 'txtClients',
+                        'txtMobileApp', 'txtParentComp', 'txtAddress', 'txtGeo',
+                        'txtWebExpDate', 'txtMobNo', 'txtEmailID'
+                    ];
+
+                    if (mode === 'edit') {
+                        TransMode = 2;
+                        $("#spMapNavigate").hide();
+                        $("#spMapMark").show();
+                        document.querySelector('.modal-title').textContent = 'Edit Customer';
+
+                        allFields.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = false; });
+                        document.querySelectorAll('input[name="shineType"], input[name="userType"]').forEach(r => r.disabled = false);
+
+                        chkActive.disabled = false;
+                        document.getElementById('btnSave').style.display = 'block';
+                        document.getElementById('btnClear').style.display = 'block';
+                        document.getElementById('btnAddContact').style.display = 'block';
+
+                    } else if (mode === 'view') {
+                        TransMode = 3;
+                        $("#spMapNavigate").show();
+                        $("#spMapMark").hide();
+                        document.querySelector('.modal-title').textContent = 'View Customer';
+
+                        allFields.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = true; });
+                        document.querySelectorAll('input[name="shineType"], input[name="userType"]').forEach(r => r.disabled = true);
+
+                        chkActive.disabled = true;
+                        document.getElementById('btnSave').style.display = 'none';
+                        document.getElementById('btnClear').style.display = 'none';
+                        document.getElementById('btnAddContact').style.display = 'none';
+                    }
+
+                    addModal.show();
+                },
+                error: function (xhr) {
+                    showErrorSnackbar("Failed to load customer: " + xhr.responseText);
+                }
+            });
+        }
+
+
+
         function validateAll() {
             let ok = true;
 
