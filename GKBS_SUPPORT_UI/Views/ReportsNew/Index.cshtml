@@ -635,59 +635,52 @@
             ],
             onCellClick: (rowData, fieldName, cellValue, column) => {
                 if (Frames == 2) {
-                    arrParams = []
-                    //var rowData = args.rowData;
-                    //Hidden column set to parameters
+                    arrParams = [];
+                    ParamIndex = 1;
+
+                    // Use hidden columns as parameters
                     for (var i = 0; i < arrParamHiddenColumns.length; i++) {
                         var values = arrParamHiddenColumns[i].field;
-                        var PV = {
-                            "Param1": rowData[values]
-                        }
-                        arrParams.push(PV);
+                        arrParams.push({ "Param1": rowData[values] });
                     }
+
                     if (nSendFilterstoDetail == 1) {
-                        //Filters set to parameters
                         $('#tblFilterData tr td').each(function (i, items) {
                             if (i % 2 == 1) {
                                 var input = items.firstChild.id;
                                 var inputtype = items.firstChild.type;
-                                var s = inputtype == "checkbox" ? $("#" + input).is(":checked") : $("#" + input).val();
-                                if (s == null) {
-                                    //alert("No Value");
-                                }
-                                else {
-                                    //alert("Values " + s);
-                                    var strpv = "Param" + ParamIndex;
-                                    var PV = {
-                                        "Param1": s
-                                    }
-                                    arrParams.push(PV);
+                                var s = inputtype == "checkbox"
+                                    ? $("#" + input).is(":checked")
+                                    : $("#" + input).val();
+                                if (s != null) {
+                                    arrParams.push({ "Param1": s });
                                     ParamIndex++;
                                 }
                             }
                         });
                     }
 
-                    console.log("Params ", arrParams);
-                    var DetailProc = arrReportDeatils[0].DetailProcedureName
+                    console.log("Detail Params:", arrParams);
+                    var DetailProc = arrReportDeatils[0].DetailProcedureName;
                     $("#DetailGrid").html("");
+
                     var listParams = {
                         "ReportID": FID,
                         "ProcedureName": DetailProc,
                         "lstvFilters": arrParams
                     };
+
                     $.ajax({
                         url: Aurl + "reportgenerate/get",
                         type: 'post',
                         contentType: 'application/json; charset=utf-8',
-                        data: JSON.stringify(listParams),                       
+                        data: JSON.stringify(listParams),
                         async: false,
                         success: function (data) {
                             if (data.length > 0) {
-                                bindDetailDataTable(eval(data), eval(listParams));
-                            }
-                            else {
-                                showErrorSnackbar("No data found");
+                                bindDetailDataTable(eval(data), listParams);
+                            } else {
+                                showErrorSnackbar("No detail data found");
                             }
                         }
                     });
@@ -713,5 +706,62 @@
             },
         });
     }
+
+
+    function bindDetailDataTable(data, filterdata) {
+        if (data.length === 0) return;
+
+        var Excelfilter = [];
+        var Col2Data = "";
+        $('#tblFilterData tr td').each(function (i, items) {
+            var insert = false;
+            if (i % 2 == 0) {
+                var lbl = items.firstChild.id;
+                Col1Data = $("#" + lbl).text();
+                insert = false;
+            } else if (i % 2 == 1) {
+                var input = items.firstChild.id;
+                var inputtype = items.firstChild.type;
+                var ifselval = inputtype == "select-one" && $("#" + input).val() > 0
+                    ? $("#" + input + " option:selected").text() : "";
+                Col2Data = inputtype == "checkbox"
+                    ? $("#" + input).is(":checked")
+                    : inputtype == "select-one" ? ifselval : $("#" + input).val();
+                insert = true;
+            }
+            if (insert) {
+                Excelfilter.push({ FilterName: Col1Data, Value: Col2Data });
+            }
+        });
+
+        var Reporthd = $("#MainHeading").text();
+
+        Detailsgrid = new GKBSDynamicGrid('#DetailGrid', detailcolumnsettings, data, {
+            enablePagination: true,
+            pageSize: ItemsperPage,
+            height: "300px",
+            enableSearch: true,
+            stickyToWindow: true,
+            enableExport: false,
+            enablePrint: false,
+            enableColumnsBtn: true,
+            enableAddRow: false,
+            enableRemoveRow: false,
+            enableSorting: true,
+            CompanyName: CompanyName,
+            ReportName: Reporthd + " Details",
+            fitersdata: Excelfilter,
+            singleIconAction: [],
+            rowActionsMenu: [],
+            onCellDoubleClick: (rowData, fieldName, cellValue, column) => {
+                navigator.clipboard.writeText(cellValue);
+                showSuccessSnackbar("Value Copied.");
+            },
+            onColumnResize: (colIndex, field, header, newWidth) => {
+                UpdateColumnWidth(FID, 2, 1, colIndex, field, newWidth);
+            },
+        });
+    }
+
 
 </script>

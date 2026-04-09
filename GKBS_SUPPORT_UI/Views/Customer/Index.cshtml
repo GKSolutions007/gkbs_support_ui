@@ -1046,6 +1046,16 @@ $("#spMapMark").show();
 
             if (!validateAll()) return;
 
+            const fileInput = document.getElementById('txtFile');
+            if (fileInput && fileInput.files.length > 0) {
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    if (fileInput.files[i].size > 5 * 1024 * 1024) {
+                        showErrorSnackbar("Upload failed: files must be under 5MB.");
+                        return;
+                    }
+                }
+            }
+
             const userId = '@Session["LoginUserID"]';
 
             const geoVal = document.getElementById('txtGeo').value.trim();
@@ -1327,7 +1337,7 @@ $("#spMapMark").show();
         }
 
         @*function editAttachment(id, fileName) {
-    const fileInput = document.createElement('input');
+    const fileInput = document.createElement('input');  
     fileInput.type = 'file';
     fileInput.accept = '*/*';
 
@@ -1615,45 +1625,15 @@ $("#spMapMark").show();
 
         function previewSelectedFiles(input) {
             const files = Array.from(input.files);
-            if (files.length === 0) return;
 
-            const attachmentColumns = [
-                {
-                    field: "FileName", header: "File Name", type: "label",
-                    width: 120, align: "left", visible: true,
-                    EnableColumnMenu: false, ShowinColumnOption: true,
-                },
-                {
-                    field: "FileType", header: "Type", type: "label",
-                    width: 50, align: "left", visible: true,
-                    EnableColumnMenu: false, ShowinColumnOption: true,
-                },
-                {
-                    field: "FileSize", header: "Size", type: "label",
-                    width: 70, align: "left", visible: true,
-                    EnableColumnMenu: false, ShowinColumnOption: true,
-                },
-                {
-                    field: "UploadedOn", header: "Uploaded On", type: "label",
-                    width: 90, align: "left", visible: true,
-                    EnableColumnMenu: false, ShowinColumnOption: true,
-                },
-                {
-                    field: "Action", header: "Action", type: "action",
-                    width: 80, align: "center", visible: true,
-                    specialColumn: true, ShowinColumnOption: false,
-                    EnableColumnMenu: false,
-                }
-            ];
-
-            // ✅ Get existing saved rows from grid
+            // ✅ Get existing saved rows (ID > 0 = already in DB)
             const gridEl = document.querySelector('#grid-Attachment-lists');
             const gridInstance = gridEl ? gridEl._gkbsGrid : null;
             const existingRows = gridInstance ? gridInstance.originalData.filter(r => r.ID > 0) : [];
 
             // ✅ Build preview rows from selected files
             const newRows = files.map(file => ({
-                ID: 0,  // 0 = not yet saved
+                ID: 0,
                 FileName: file.name,
                 FileType: file.name.split('.').pop().toUpperCase(),
                 FileSize: file.size >= 1024 * 1024
@@ -1662,8 +1642,16 @@ $("#spMapMark").show();
                 UploadedOn: 'Pending...'
             }));
 
-            // ✅ Combine existing saved + new preview rows
+            // ✅ Always re-render — even if both arrays are empty
             const allRows = [...existingRows, ...newRows];
+
+            const attachmentColumns = [
+                { field: "FileName", header: "File Name", type: "label", width: 120, align: "left", visible: true, EnableColumnMenu: false, ShowinColumnOption: true },
+                { field: "FileType", header: "Type", type: "label", width: 50, align: "left", visible: true, EnableColumnMenu: false, ShowinColumnOption: true },
+                { field: "FileSize", header: "Size", type: "label", width: 70, align: "left", visible: true, EnableColumnMenu: false, ShowinColumnOption: true },
+                { field: "UploadedOn", header: "Uploaded On", type: "label", width: 90, align: "left", visible: true, EnableColumnMenu: false, ShowinColumnOption: true },
+                { field: "Action", header: "Action", type: "action", width: 80, align: "center", visible: true, specialColumn: true, ShowinColumnOption: false, EnableColumnMenu: false }
+            ];
 
             new GKBSDynamicGrid('#grid-Attachment-lists', attachmentColumns, allRows, {
                 enablePagination: false,
@@ -1677,39 +1665,33 @@ $("#spMapMark").show();
                 height: "150px",
                 singleIconAction: [
                     {
-                        icon: '👁️',
-                        title: 'View',
-                        displayType: 'single_icon',
+                        icon: '👁️', title: 'View', displayType: 'single_icon',
                         handler: function (row) {
                             if (row.ID > 0) viewAttachment(row.ID, row.FileName, row.FileType);
                             else showErrorSnackbar('Save first to view!');
                         }
                     },
                     {
-                        icon: '⬇️',
-                        title: 'Download',
-                        displayType: 'single_icon',
+                        icon: '⬇️', title: 'Download', displayType: 'single_icon',
                         handler: function (row) {
                             if (row.ID > 0) downloadAttachment(row.ID, row.FileName);
                             else showErrorSnackbar('Save first to download!');
                         }
                     },
                     {
-                        icon: '🗑️',
-                        title: 'Delete',
-                        displayType: 'single_icon',
+                        icon: '🗑️', title: 'Delete', displayType: 'single_icon',
                         handler: function (row) {
                             if (row.ID > 0) {
                                 deleteAttachment(row.ID);
                             } else {
-                                // ✅ Remove from file input and grid
+                                // Remove from file input
                                 const fileInput = document.getElementById('txtFile');
                                 const dt = new DataTransfer();
                                 Array.from(fileInput.files).forEach(f => {
                                     if (f.name !== row.FileName) dt.items.add(f);
                                 });
                                 fileInput.files = dt.files;
-                                previewSelectedFiles(fileInput);
+                                previewSelectedFiles(fileInput); // ✅ re-render (even if now empty)
                             }
                         }
                     }
